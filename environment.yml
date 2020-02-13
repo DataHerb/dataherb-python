@@ -1,0 +1,11 @@
+name: dataherb-python
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - pandas
+  - pip
+  - pip:
+    - requests>=2.22.0
