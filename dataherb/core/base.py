@@ -23,7 +23,7 @@ class Herb:
         self.herb_meta_json = herb_meta_json
         self.name = self.herb_meta_json.get("name")
         self.description = self.herb_meta_json.get("description")
-        self.repsitory = self.herb_meta_json.get("repsitory")
+        self.repository = self.herb_meta_json.get("repository")
         self.id = self.herb_meta_json.get("id")
 
     def search_score(self, keywords, keys=None):
@@ -77,7 +77,7 @@ class Herb:
 
         for file in self.herb_meta_json.get("data"):
             file_path = "https://raw.githubusercontent.com/{}/master/{}".format(
-                self.repsitory,
+                self.repository,
                 file.get("path")
             )
             file_format = file.get("format")
