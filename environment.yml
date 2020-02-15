@@ -9,4 +9,5 @@ dependencies:
   - pyyaml>=5.3
   - pip
   - pip:
-    - fuzzywuzzy==0.18.0
+    - fuzzywuzzy>=0.18.0
+    - python-Levenshtein>=0.12

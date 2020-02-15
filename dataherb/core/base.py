@@ -117,14 +117,14 @@ class Herb:
                 except Exception as e:
                     logger.error(f"Error loading remote file: {file_path}")
                     data = file_string_io
-            if file_format.lower() == "json":
+            elif file_format.lower() == "json":
                 if isinstance(file_content, bytes):
                     file_string_io = io.StringIO(file_content.decode(file_decode))
                 else:
                     file_string_io = file_content
 
                 try:
-                    data = pd.read_csv(file_path)
+                    data = pd.read_json(file_path)
                 except Exception as e:
                     logger.error(f"Error loading remote file: {file_path}")
                     data = file_string_io
@@ -135,7 +135,8 @@ class Herb:
                 "name": file.get("name"),
                 "description": file.get("description"),
                 "path": file_path,
-                "df": data
+                "file": file.get("path"),
+                "data": data
             })
 
         return data_files

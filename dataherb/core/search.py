@@ -52,10 +52,10 @@ def search_by_ids_in_flora(flora, ids):
     herbs = []
     for herb in flora:
         if herb.id in ids:
-            herb_search_score = {
+            herb_matched = {
                 "herb": herb,
                 "id": herb.id
             }
-        herbs.append(herb_search_score)
+            herbs.append(herb_matched)
 
     return herbs

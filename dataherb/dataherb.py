@@ -99,10 +99,6 @@ class DataHerb:
         return herb.download()
 
 
-def main():
-
-    return
-
 
 if __name__ == "__main__":
 
@@ -112,8 +108,7 @@ if __name__ == "__main__":
     print(geo_datasets)
 
     print(
-        dataherb.herb("ecb_currency_exchange")
+        dataherb.herb("geonames_timezone")
     )
-
 
     logger.debug("End of Game")
