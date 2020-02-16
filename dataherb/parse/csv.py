@@ -1,5 +1,5 @@
 import logging
-from model import MetaData
+from dataherb.parse.model import MetaData
 
 logging.basicConfig()
 logger = logging.getLogger("dataherb.parse.csv")

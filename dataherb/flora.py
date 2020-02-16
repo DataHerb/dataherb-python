@@ -1,8 +1,8 @@
 import logging
-from fetch.remote import get_data_from_url as _get_data_from_url
-from core.base import Herb
-from core.search import search_by_keywords_in_flora as _search_by_keywords_in_flora
-from core.search import search_by_ids_in_flora as _search_by_ids_in_flora
+from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.core.base import Herb
+from dataherb.core.search import search_by_keywords_in_flora as _search_by_keywords_in_flora
+from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
 
 logging.basicConfig()
 logger = logging.getLogger("dataherb.dataherb")

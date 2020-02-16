@@ -1,8 +1,10 @@
-import os
-import click
-from dataherb import Flora
 import logging
-from parse.model import MetaData
+import os
+
+import click
+
+from dataherb.flora import Flora
+from dataherb.parse.model import MetaData
 
 __CWD__ = os.getcwd()
 
@@ -39,3 +41,7 @@ def create():
         "The .dataherb folder and metadata.yml file has been created inside \n"
         f"{__CWD__}"
     )
+
+if __name__ == "__main__":
+    fl = Flora()
+    pass

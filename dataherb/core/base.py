@@ -2,8 +2,8 @@ import logging
 import io
 import json
 from fuzzywuzzy import fuzz, process
-from utils.data import flatten_dict as _flatten_dict
-from fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.utils.data import flatten_dict as _flatten_dict
+from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 import yaml
 import pandas as pd
 

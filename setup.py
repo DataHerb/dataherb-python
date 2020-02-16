@@ -25,13 +25,14 @@ def setup():
         author_email='hi@leima.is',
         license='MIT',
         packages=_find_packages(exclude=('tests',)),
+        install_requires=_requirements(),
         include_package_data=True,
         extras_require={
             "docs":  ["sphinx>=2.4.1", "sphinx-rtd-theme>=0.4.3"]
         },
         entry_points={
-            "consolde_scripts": [
-                "dataherb=command.dataherb"
+            "console_scripts": [
+                "dataherb=dataherb.command:dataherb"
             ]
         },
         test_suite='nose.collector',
