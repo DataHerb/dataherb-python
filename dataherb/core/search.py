@@ -22,6 +22,7 @@ def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
 
     for herb in flora:
         herb_search_score = {
+            "id": herb.id,
             "herb": herb,
             "score": herb.search_score(keywords)
         }

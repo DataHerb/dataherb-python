@@ -7,6 +7,7 @@ dependencies:
   - pandas>=0.23
   - requests>=2.22.0
   - pyyaml>=5.3
+  - click==7.0
   - pip
   - pip:
     - fuzzywuzzy>=0.18.0

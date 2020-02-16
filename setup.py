@@ -29,6 +29,11 @@ def setup():
         extras_require={
             "docs":  ["sphinx>=2.4.1", "sphinx-rtd-theme>=0.4.3"]
         },
+        entry_points={
+            "consolde_scripts": [
+                "dataherb=command.dataherb"
+            ]
+        },
         test_suite='nose.collector',
         tests_require=['nose'],
         zip_safe=False

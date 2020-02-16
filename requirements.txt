@@ -3,3 +3,4 @@ requests>=2.22.0
 fuzzywuzzy>=0.18.0
 pyyaml>=1.18
 python-Levenshtein>=0.12
+click==7.0
