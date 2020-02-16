@@ -7,9 +7,9 @@ from core.search import search_by_ids_in_flora as _search_by_ids_in_flora
 logging.basicConfig()
 logger = logging.getLogger("dataherb.dataherb")
 
-_DATAHERB_API_URL = "https://dataherb.github.io/api/datasets.json"
+_DATAHERB_API_URL = "https://dataherb.github.io/api/flora.json"
 
-class DataHerb:
+class Flora(object):
     """
     DataHerb is the container of datasets.
     """
@@ -23,6 +23,8 @@ class DataHerb:
         if api_url is None:
             api_url = _DATAHERB_API_URL
         self.api_url = api_url
+
+        self.website = "https://dataherb.github.io/flora"
 
         if flora is None:
             flora = self._get_flora()
@@ -75,9 +77,11 @@ class DataHerb:
         if herbs:
             herb = herbs[0]
 
-        herb = herb.get("herb")
+            herb = herb.get("herb")
 
-        return herb.metadata()
+            return herb.metadata()
+        else:
+            return
 
     def herb(self, id):
         """
@@ -94,21 +98,23 @@ class DataHerb:
         if herbs:
             herb = herbs[0]
 
-        herb = herb.get("herb")
+            herb = herb.get("herb")
 
-        return herb.download()
-
+            return herb
+        else:
+            logger.error(f"Could not find herb {id}")
+            return
 
 
 if __name__ == "__main__":
 
-    dataherb = DataHerb()
+    dataherb = Flora()
     geo_datasets = _search_by_keywords_in_flora(dataherb.flora, keywords=["geo"])
 
     print(geo_datasets)
 
     print(
-        dataherb.herb("geonames_timezone")
+        dataherb.herb("geonames_timezone").leaves.get("dataset/geonames_timezone.csv").data
     )
 
     logger.debug("End of Game")
