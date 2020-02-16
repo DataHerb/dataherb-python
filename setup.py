@@ -1,14 +1,17 @@
+from os import path
 from setuptools import setup as _setup
 from setuptools import find_packages as _find_packages
 from dataherb.version import __version__
 
+# read the contents of your README file
+__CWD__ = path.abspath(path.dirname(__file__))
+with open(path.join(__CWD__, 'README.md'), encoding='utf-8') as fp:
+    PACKAGE_LONG_DESCRIPTION = fp.read()
+
+
 PACKAGE_NAME = 'dataherb'
 PACKAGE_VERSION = __version__
 PACKAGE_DESCRIPTION = 'Get clean datasets from DataHerb to boost your data science and data analysis projects'
-PACKAGE_LONG_DESCRIPTION = (
-      'DataHerb is a project to list curated datasets. '
-      'The dataherb python package makes it easy to search, preview, and load data into your projects.'
-      )
 PACKAGE_URL = 'https://github.com/DataHerb/dataherb-python'
 
 def _requirements():
@@ -20,6 +23,7 @@ def setup():
         version=PACKAGE_VERSION,
         description=PACKAGE_DESCRIPTION,
         long_description=PACKAGE_LONG_DESCRIPTION,
+        long_description_content_type='text/markdown',
         url=PACKAGE_URL,
         author='Lei Ma',
         author_email='hi@leima.is',
