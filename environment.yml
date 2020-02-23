@@ -6,9 +6,10 @@ dependencies:
   - python=3.7
   - pandas>=0.23
   - requests>=2.22.0
-  - pyyaml>=5.3
   - click==7.0
   - pip
   - pip:
     - fuzzywuzzy>=0.18.0
     - python-Levenshtein>=0.12
+    - ruamel.yaml>=0.16.10
+    - inquirer>=2.6.3

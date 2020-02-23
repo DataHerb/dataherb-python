@@ -1,6 +1,7 @@
 pandas>=0.23
 requests>=2.22.0
 fuzzywuzzy>=0.18.0
-pyyaml>=1.18
+ruamel.yaml>=0.16.10
 python-Levenshtein>=0.12
 click==7.0
+inquirer>=2.6.3

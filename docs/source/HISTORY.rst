@@ -7,3 +7,11 @@ This is the CHANGELOG of the package.
 -------------------------
 
 First version
+
+[0.0.3] - 2020-02-23
+-------------------------
+
+Added
+
+1. Data columns autogenerator for csv files.
+
