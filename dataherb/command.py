@@ -77,6 +77,8 @@ def where_is_dataset():
         logger.error("Can not get a list of folders in current directory.")
         folders = []
 
+    folders = [i for i in folders if not i.startswith(".")]
+
     if folders:
         questions = [
             inquirer.List(
@@ -134,12 +136,12 @@ def create():
 
     dataset_files = md.parse_structure(dataset_folder)
     print(
-        f"found {dataset_files}"
+        f"found {dataset_files} in {dataset_folder}"
     )
 
     for file in dataset_files:
         file_meta = describe_file(file)
-        md.append_leaf(file, file_meta)
+        md.append_leaf(os.path.join(dataset_folder,file), file_meta)
 
     md.create()
 

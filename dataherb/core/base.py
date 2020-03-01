@@ -4,7 +4,7 @@ import json
 from fuzzywuzzy import fuzz, process
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-import yaml
+import ruamel.yaml as yaml
 import pandas as pd
 
 logging.basicConfig()
