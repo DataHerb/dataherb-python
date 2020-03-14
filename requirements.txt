@@ -5,3 +5,4 @@ ruamel.yaml>=0.16.10
 python-Levenshtein>=0.12
 click==7.0
 inquirer>=2.6.3
+colorama>=0.4.3
