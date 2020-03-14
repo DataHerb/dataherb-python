@@ -5,7 +5,7 @@ import click
 import inquirer
 
 from dataherb.flora import Flora
-from dataherb.parse.model import MetaData, IGNORED_FOLDERS_AND_FILES
+from dataherb.parse.model import MetaData, IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MESSAGE_CODE
 
 __CWD__ = os.getcwd()
 
@@ -150,6 +150,60 @@ def create():
         f"{__CWD__}\n"
         "Please review the metadata.yml file and update other necessary fields of your desire."
     )
+
+@dataherb.command()
+@click.option('-v', '--verbose', type=str, default='warning')
+def validate(verbose):
+
+    click.secho(
+        f"Your current working directory is {__CWD__}\n"
+        "I will look for the .dataherb folder right here.\n",
+        bold=True
+    )
+
+    ALL_VERBOSE = ["warning", "error", "all"]
+    if verbose not in ALL_VERBOSE:
+        logger.error(f"-v or --verbose can only take one of {ALL_VERBOSE}")
+
+    md = MetaData()
+
+    validate = md.validate()
+
+    def echo_summary(key, value_dict, bg=None, fg=None):
+        if bg is None:
+            bg = "black"
+        if fg is None:
+            fg = "white"
+        return click.secho(
+                    f'  {key}: {value_dict.get("value")}\n'
+                    f'    STATUS: {value_dict.get("status")};\n'
+                    f'    MESSAGE: {value_dict.get("message")}',
+                    bg=bg, fg=fg
+                )
+
+    click.secho("Summary: validating metadata:\n- data:", bold=True)
+    for val in validate.get("data"):
+        for val_key, val_val in val.items():
+            if (
+                val_val.get("status") == STATUS_CODE["SUCCESS"]
+            ) and (verbose == "all"):
+                echo_summary(val_key, val_val, bg="green")
+            elif (
+                val_val.get("status") == STATUS_CODE["WARNING"]
+            ) and (verbose == "warning"):
+                echo_summary(val_key, val_val, bg="magenta")
+            elif (
+                val_val.get("status") == STATUS_CODE["ERROR"]
+            ) and (verbose in ["warning", "error"]):
+                echo_summary(val_key, val_val, bg="red")
+
+    click.secho(
+        "The .dataherb folder and metadata.yml file \n"
+        f"{__CWD__}\n"
+        " has been validated. Please read the summary and fix the errors.",
+        bold=True
+    )
+
 
 if __name__ == "__main__":
     fl = Flora()
