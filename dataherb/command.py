@@ -3,9 +3,10 @@ import os
 
 import click
 import inquirer
-
+from dataherb.core.base import Herb
 from dataherb.flora import Flora
-from dataherb.parse.model import MetaData, IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MESSAGE_CODE
+from dataherb.parse.model import (IGNORED_FOLDERS_AND_FILES, MESSAGE_CODE,
+                                  STATUS_CODE, MetaData)
 
 __CWD__ = os.getcwd()
 
@@ -104,16 +105,32 @@ def where_is_dataset():
 
 # _FLORA.herb("geonames_timezone").leaves.get("dataset/geonames_timezone.csv").data
 
-@click.group()
-def dataherb():
-    click.echo("Hello {}".format(os.environ.get('USER', '')))
-    click.echo("Welcome to DataHerb.")
+@click.group(invoke_without_command=True)
+@click.pass_context
+def dataherb(ctx):
+    if ctx.invoked_subcommand is None:
+        click.echo("Hello {}".format(os.environ.get('USER', '')))
+        click.echo("Welcome to DataHerb.")
+    else:
+        click.echo('Loading Service: %s' % ctx.invoked_subcommand)
 
 @dataherb.command()
-def search(keywords, ids):
+@click.argument('keywords')
+def search(keywords):
+    """
+    search datasets on DataHerb by keywords or id
+    """
     fl = Flora()
-    click.echo('Search Herbs in DataHerb Flora ...')
-    fl.search()
+    click.echo('Searching Herbs in DataHerb Flora ...')
+    results = fl.search(keywords)
+    click.echo(f'Found {len(results)} results')
+    click.echo(results)
+    if results:
+        for result in results:
+            click.echo(
+                f'DataHerb ID: {result.get("id")}'
+            )
+            click.echo(result.get('herb').metadata())
 
 @dataherb.command()
 @click.confirmation_option(
@@ -122,6 +139,9 @@ def search(keywords, ids):
     "Are you sure this is the correct path?"
 )
 def create():
+    """
+    creates metadata for current dataset
+    """
 
     md = MetaData()
 
@@ -154,6 +174,9 @@ def create():
 @dataherb.command()
 @click.option('-v', '--verbose', type=str, default='warning')
 def validate(verbose):
+    """
+    validates the existing metadata for current dataset
+    """
 
     click.secho(
         f"Your current working directory is {__CWD__}\n"
