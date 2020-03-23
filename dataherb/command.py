@@ -2,6 +2,7 @@ import logging
 import os
 from collections import OrderedDict
 import sys
+import git
 
 import click
 import inquirer
@@ -173,6 +174,33 @@ def search(id=None, keywords=None):
                     sys.stdout
                 )
             )
+
+@dataherb.command()
+@click.argument('id', required=True)
+def download(id):
+    """
+    download dataset using id
+    """
+
+    fl = Flora()
+    click.echo(f'Fetching Herbs {id} in DataHerb Flora ...')
+    result = fl.herb(id)
+    if not result:
+        click.echo(f'Could not find dataset with id {id}')
+    else:
+        result_metadata = result.metadata()
+        click.echo(
+            f'Downloading DataHerb ID: {result_metadata.get("id")}'
+        )
+        result_repository = result_metadata.get("repository")
+        dest_folder = f"./{result_repository}"
+        if os.path.exists(dest_folder):
+            click.echo(f'Can not download dataset to {dest_folder}: folder exists.')
+        else:
+            dest_folder_parent = f"./{result_repository.split('/')[0]}"
+            os.makedirs(dest_folder_parent)
+            git.Git(dest_folder_parent).clone(f"https://github.com/{result_repository}.git")
+
 
 
 @dataherb.command()
