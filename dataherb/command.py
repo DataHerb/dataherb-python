@@ -1,12 +1,26 @@
 import logging
 import os
+from collections import OrderedDict
+import sys
 
 import click
 import inquirer
+import ruamel.yaml
 from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model import (IGNORED_FOLDERS_AND_FILES, MESSAGE_CODE,
                                   STATUS_CODE, MetaData)
+from ruamel.yaml.representer import RoundTripRepresenter
+
+
+class MyRepresenter(RoundTripRepresenter):
+    pass
+
+ruamel.yaml.add_representer(
+    OrderedDict, MyRepresenter.represent_dict, representer=MyRepresenter
+)
+yaml = ruamel.yaml.YAML()
+yaml.Representer = MyRepresenter
 
 __CWD__ = os.getcwd()
 
@@ -115,22 +129,51 @@ def dataherb(ctx):
         click.echo('Loading Service: %s' % ctx.invoked_subcommand)
 
 @dataherb.command()
-@click.argument('keywords')
-def search(keywords):
+@click.argument('keywords', required=False)
+@click.option('--id', '-i', default=False)
+def search(id=None, keywords=None):
     """
     search datasets on DataHerb by keywords or id
     """
+    SHOW_KEYS = ["name", "description", "contributors"]
     fl = Flora()
-    click.echo('Searching Herbs in DataHerb Flora ...')
-    results = fl.search(keywords)
-    click.echo(f'Found {len(results)} results')
-    click.echo(results)
-    if results:
-        for result in results:
+    if not id:
+        click.echo('Searching Herbs in DataHerb Flora ...')
+        results = fl.search(keywords)
+        click.echo(f'Found {len(results)} results')
+        if not results:
+            click.echo(f'Could not find dataset related to {keywords}')
+        else:
+            for result in results:
+                result_metadata = result.get('herb').metadata()
+                click.echo(
+                    f'DataHerb ID: {result_metadata.get("id")}'
+                )
+                click.echo(
+                    yaml.dump(
+                        OrderedDict(
+                            (key, result_metadata[key]) for key in SHOW_KEYS
+                        ),
+                        sys.stdout
+                    )
+                )
+    else:
+        click.echo(f'Fetching Herbs {id} in DataHerb Flora ...')
+        result = fl.herb(id)
+        if not result:
+            click.echo(f'Could not find dataset with id {id}')
+        else:
+            result_metadata = result.metadata()
             click.echo(
-                f'DataHerb ID: {result.get("id")}'
+                f'DataHerb ID: {result_metadata.get("id")}'
             )
-            click.echo(result.get('herb').metadata())
+            click.echo(
+                yaml.dump(
+                    result_metadata,
+                    sys.stdout
+                )
+            )
+
 
 @dataherb.command()
 @click.confirmation_option(
