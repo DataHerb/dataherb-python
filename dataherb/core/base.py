@@ -1,7 +1,7 @@
 import logging
 import io
 import json
-from fuzzywuzzy import fuzz, process
+from rapidfuzz import fuzz, process
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 import ruamel.yaml as yaml
