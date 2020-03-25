@@ -9,7 +9,6 @@ dependencies:
   - click==7.0
   - pip
   - pip:
-    - fuzzywuzzy>=0.18.0
-    - python-Levenshtein>=0.12
+    - rapidfuzz>=0.2.2
     - ruamel.yaml>=0.16.10
     - inquirer>=2.6.3
