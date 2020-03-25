@@ -1,11 +1,17 @@
-import logging
 import io
 import json
 from rapidfuzz import fuzz, process
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 import ruamel.yaml as yaml
+import logging
+from collections import OrderedDict
+
 import pandas as pd
+from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.utils.data import flatten_dict as _flatten_dict
+from fuzzywuzzy import fuzz, process
+
 
 logging.basicConfig()
 logger = logging.getLogger("dataherb.core.base")
@@ -20,6 +26,8 @@ class Herb(object):
         :param herb: the dictionary that specifies the herb
         :type herb: dict
         """
+        if isinstance(herb_meta_json, dict):
+            herb_meta_json = OrderedDict(herb_meta_json)
         self.herb_meta_json = herb_meta_json
         self.name = self.herb_meta_json.get("name")
         self.description = self.herb_meta_json.get("description")
@@ -62,12 +70,12 @@ class Herb(object):
 
         return max_score
 
-    def metadata(self):
+    def metadata(self, keys=None):
         """
         metadata formats the metadata of the herb
         """
 
-        return yaml.dump(self.herb_meta_json)
+        return self.herb_meta_json
 
     def download(self):
         """
@@ -94,7 +102,14 @@ class Herb(object):
             self.leaves[leaf_meta_path] = leaf
 
     def __str__(self):
-        return self.metadata()
+        meta = self.metadata()
+        authors = meta.get("contributors", [])
+        authors = ", ".join([author.get("name") for author in authors])
+        return (
+            f"DataHerb ID: {meta.get('id')}\n"
+            f"description: {meta.get('description')}\n"
+            f"contributors: {authors}"
+        )
 
 
 class Leaf(object):
@@ -194,11 +209,9 @@ class Leaf(object):
         metadata formats the metadata of the herb
         """
         if format is None:
-            format = "yaml"
+            format = "json"
 
-        if format == "yaml":
-            return yaml.dump(self.leaf_meta_json)
-        elif format == "json":
+        if format == "json":
             return self.leaf_meta_json
         else:
             logger.error(f"format {format} is not support for metadata!")
@@ -212,4 +225,3 @@ class Leaf(object):
             self.path,
             self.metadata()
         )
-

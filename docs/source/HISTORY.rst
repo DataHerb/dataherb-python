@@ -21,3 +21,11 @@ Added
 Fixed
 
 1. Fixed file not found bug. The full file path is required to analyze the file.
+
+[0.0.6] - 2020-03-23
+-------------------------
+
+Added
+
+1. Search dataset by id or keyword: dataherb search
+2. Download dataset by id: dataherb download

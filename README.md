@@ -20,7 +20,49 @@
 pip install dataherb
 ```
 
-## Usage
+## The DataHerb Command-Line Tool
+
+> Requires Python 3
+
+The DataHerb cli provides tools to create dataset metadata, validate metadata, search dataset in flora, and download dataset.
+
+### Search and Download
+
+Search by keyword
+
+```
+dataherb search covid19
+# Shows the minimal metadata
+```
+
+Search by dataherb id
+
+```
+dataherb search -i covid19_eu_data
+# Shows the full metadata
+```
+
+Download dataset by dataherb id
+
+```
+dataherb download covid19_eu_data
+# Downloads this dataset: http://dataherb.io/flora/covid19_eu_data
+```
+
+
+### Create Dataset Using Command Line Tool
+
+We provide a template for dataset creation.
+
+> Before creating a dataset, it is recommended that the user reads [the intro](#Understanding-DataHerb).
+
+Use the following command line tool to create the metadata template.
+```bash
+dataherb create
+```
+
+
+## Use DataHerb in Your Code
 
 ### Load Data into DataFrame
 
@@ -47,18 +89,7 @@ print(tz_df)
 ```
 
 
-### Create Dataset Using Command Line Tool
-
-We provide a template for dataset creation.
-
-> Before creating a dataset, it is recommended that the user reads [the intro](#Understanding-DataHerb).
-
-Use the following command line tool to create the metadata template.
-```bash
-dataherb create
-```
-
-## Understanding DataHerb
+## The DataHerb Project
 
 
 ### What is DataHerb

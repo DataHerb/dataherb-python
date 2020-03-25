@@ -1,11 +1,27 @@
 import logging
 import os
+from collections import OrderedDict
+import sys
+import git
 
 import click
 import inquirer
-
+import ruamel.yaml
+from dataherb.core.base import Herb
 from dataherb.flora import Flora
-from dataherb.parse.model import MetaData, IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MESSAGE_CODE
+from dataherb.parse.model import (IGNORED_FOLDERS_AND_FILES, MESSAGE_CODE,
+                                  STATUS_CODE, MetaData)
+from ruamel.yaml.representer import RoundTripRepresenter
+
+
+class MyRepresenter(RoundTripRepresenter):
+    pass
+
+ruamel.yaml.add_representer(
+    OrderedDict, MyRepresenter.represent_dict, representer=MyRepresenter
+)
+yaml = ruamel.yaml.YAML()
+yaml.Representer = MyRepresenter
 
 __CWD__ = os.getcwd()
 
@@ -104,16 +120,88 @@ def where_is_dataset():
 
 # _FLORA.herb("geonames_timezone").leaves.get("dataset/geonames_timezone.csv").data
 
-@click.group()
-def dataherb():
-    click.echo("Hello {}".format(os.environ.get('USER', '')))
-    click.echo("Welcome to DataHerb.")
+@click.group(invoke_without_command=True)
+@click.pass_context
+def dataherb(ctx):
+    if ctx.invoked_subcommand is None:
+        click.echo("Hello {}".format(os.environ.get('USER', '')))
+        click.echo("Welcome to DataHerb.")
+    else:
+        click.echo('Loading Service: %s' % ctx.invoked_subcommand)
 
 @dataherb.command()
-def search(keywords, ids):
+@click.argument('keywords', required=False)
+@click.option('--id', '-i', default=False)
+def search(id=None, keywords=None):
+    """
+    search datasets on DataHerb by keywords or id
+    """
+    SHOW_KEYS = ["name", "description", "contributors"]
     fl = Flora()
-    click.echo('Search Herbs in DataHerb Flora ...')
-    fl.search()
+    if not id:
+        click.echo('Searching Herbs in DataHerb Flora ...')
+        results = fl.search(keywords)
+        click.echo(f'Found {len(results)} results')
+        if not results:
+            click.echo(f'Could not find dataset related to {keywords}')
+        else:
+            for result in results:
+                result_metadata = result.get('herb').metadata()
+                click.echo(
+                    f'DataHerb ID: {result_metadata.get("id")}'
+                )
+                click.echo(
+                    yaml.dump(
+                        OrderedDict(
+                            (key, result_metadata[key]) for key in SHOW_KEYS
+                        ),
+                        sys.stdout
+                    )
+                )
+    else:
+        click.echo(f'Fetching Herbs {id} in DataHerb Flora ...')
+        result = fl.herb(id)
+        if not result:
+            click.echo(f'Could not find dataset with id {id}')
+        else:
+            result_metadata = result.metadata()
+            click.echo(
+                f'DataHerb ID: {result_metadata.get("id")}'
+            )
+            click.echo(
+                yaml.dump(
+                    result_metadata,
+                    sys.stdout
+                )
+            )
+
+@dataherb.command()
+@click.argument('id', required=True)
+def download(id):
+    """
+    download dataset using id
+    """
+
+    fl = Flora()
+    click.echo(f'Fetching Herbs {id} in DataHerb Flora ...')
+    result = fl.herb(id)
+    if not result:
+        click.echo(f'Could not find dataset with id {id}')
+    else:
+        result_metadata = result.metadata()
+        click.echo(
+            f'Downloading DataHerb ID: {result_metadata.get("id")}'
+        )
+        result_repository = result_metadata.get("repository")
+        dest_folder = f"./{result_repository}"
+        if os.path.exists(dest_folder):
+            click.echo(f'Can not download dataset to {dest_folder}: folder exists.')
+        else:
+            dest_folder_parent = f"./{result_repository.split('/')[0]}"
+            os.makedirs(dest_folder_parent)
+            git.Git(dest_folder_parent).clone(f"https://github.com/{result_repository}.git")
+
+
 
 @dataherb.command()
 @click.confirmation_option(
@@ -122,6 +210,9 @@ def search(keywords, ids):
     "Are you sure this is the correct path?"
 )
 def create():
+    """
+    creates metadata for current dataset
+    """
 
     md = MetaData()
 
@@ -154,6 +245,9 @@ def create():
 @dataherb.command()
 @click.option('-v', '--verbose', type=str, default='warning')
 def validate(verbose):
+    """
+    validates the existing metadata for current dataset
+    """
 
     click.secho(
         f"Your current working directory is {__CWD__}\n"
