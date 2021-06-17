@@ -12,10 +12,10 @@ def flatten_dict(nested_dict, sep=None):
     :rtype: dict
     """
     if sep is None:
-        sep = '__'
+        sep = "__"
     res = {}
 
-    def flatten(x, name=''):
+    def flatten(x, name=""):
         if type(x) is dict:
             for a in x:
                 flatten(x[a], name + a + sep)

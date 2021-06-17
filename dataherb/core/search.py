@@ -1,4 +1,3 @@
-
 def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
     """
     search_in_flora calculates the match score of each herb and returns the top 10.
@@ -24,7 +23,7 @@ def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
         herb_search_score = {
             "id": herb.id,
             "herb": herb,
-            "score": herb.search_score(keywords)
+            "score": herb.search_score(keywords),
         }
         herb_scores.append(herb_search_score)
 
@@ -53,10 +52,7 @@ def search_by_ids_in_flora(flora, ids):
     herbs = []
     for herb in flora:
         if herb.id in ids:
-            herb_matched = {
-                "herb": herb,
-                "id": herb.id
-            }
+            herb_matched = {"herb": herb, "id": herb.id}
             herbs.append(herb_matched)
 
     return herbs
