@@ -36,8 +36,8 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  favicon: assets/logo.png
-  logo: assets/logo_badge.svg
+  favicon: assets/favicon/ms-icon-310x310.png
+  logo: assets/logos/logo.png
 
 
 

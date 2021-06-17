@@ -1,18 +1,20 @@
-import logging
-from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-from dataherb.core.base import Herb
-from dataherb.core.search import search_by_keywords_in_flora as _search_by_keywords_in_flora
-from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
+from loguru import logger
 
-logging.basicConfig()
-logger = logging.getLogger("dataherb.dataherb")
+from dataherb.core.base import Herb
+from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
+from dataherb.core.search import (
+    search_by_keywords_in_flora as _search_by_keywords_in_flora,
+)
+from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 
 _DATAHERB_API_URL = "https://dataherb.github.io/api/flora.json"
+
 
 class Flora(object):
     """
     DataHerb is the container of datasets.
     """
+
     def __init__(self, api_url=None, flora=None):
         """
         :param api_url: API of the DataHerb service, defaults to dataherb official
@@ -114,7 +116,9 @@ if __name__ == "__main__":
     print(geo_datasets)
 
     print(
-        dataherb.herb("geonames_timezone").leaves.get("dataset/geonames_timezone.csv").data
+        dataherb.herb("geonames_timezone")
+        .leaves.get("dataset/geonames_timezone.csv")
+        .data
     )
 
     logger.debug("End of Game")

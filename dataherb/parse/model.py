@@ -10,11 +10,12 @@ from ruamel.yaml.representer import RoundTripRepresenter
 logging.basicConfig()
 logger = logging.getLogger("dataherb.parse.model")
 
-IGNORED_FOLDERS_AND_FILES = ['.git', '.dataherb', '.vscode']
+IGNORED_FOLDERS_AND_FILES = [".git", ".dataherb", ".vscode"]
 
 # Add representer to ruamel.yaml for OrderedDict
 class MyRepresenter(RoundTripRepresenter):
     pass
+
 
 ruamel.yaml.add_representer(
     OrderedDict, MyRepresenter.represent_dict, representer=MyRepresenter
@@ -27,55 +28,44 @@ MESSAGE_CODE = {
     "FILE_NOT_FOUND": lambda x: f"{x} was not found",
     "FILE_FOUND": lambda x: f"{x} was found",
     "EXISTS": lambda x: f"{x} exists",
-    "FREE_MESSAGE": lambda x: f"{x}"
+    "FREE_MESSAGE": lambda x: f"{x}",
 }
 
 STATUS_CODE = {
     "UNKNOWN": "unknown",
     "SUCCESS": "success",
     "WARNING": "warning",
-    "ERROR": "error"
+    "ERROR": "error",
 }
+
 
 class MetaData(object):
     def __init__(self):
-        self.dataherb_folder = '.dataherb'
-        self.metadata_file = 'metadata.yml'
-        self.template = OrderedDict({
-            "name": "",
-            "description": "",
-            "contributors": [
-                {
-                    "name": "",
-                    "github": ""
-                }
-            ],
-            "data": [],
-            "references": [
-                {
-                    "name": "",
-                    "link": ""
-                }
-            ]
-        })
+        self.dataherb_folder = ".dataherb"
+        self.metadata_file = "metadata.yml"
+        self.template = OrderedDict(
+            {
+                "name": "",
+                "description": "",
+                "contributors": [{"name": "", "github": ""}],
+                "data": [],
+                "references": [{"name": "", "link": ""}],
+            }
+        )
 
     def parse_structure(self, folder=None):
 
         if folder is None:
-            folder = '.'
+            folder = "."
 
         tree_f = []
         tree_d = []
         for root, dirs, files in os.walk(folder):
             for d in dirs:
                 if d not in IGNORED_FOLDERS_AND_FILES:
-                    tree_d.append(
-                        os.path.relpath(os.path.join(root, d), folder)
-                    )
+                    tree_d.append(os.path.relpath(os.path.join(root, d), folder))
             for f in files:
-                tree_f.append(
-                    os.path.relpath(os.path.join(root, f), folder)
-                )
+                tree_f.append(os.path.relpath(os.path.join(root, f), folder))
 
         self.tree = tree_f
 
@@ -92,10 +82,7 @@ class MetaData(object):
 
         fields = []
         for col in columns:
-            fields.append({
-                "name": col,
-                "description": ""
-            })
+            fields.append({"name": col, "description": ""})
 
         return fields
 
@@ -115,16 +102,7 @@ class MetaData(object):
         if file_format == "csv":
             fields = self.parse_csv(path)
         else:
-            fields = [
-                {
-                    "name": "",
-                    "description": ""
-                },
-                {
-                    "name": "",
-                    "description": ""
-                }
-            ]
+            fields = [{"name": "", "description": ""}, {"name": "", "description": ""}]
 
         res = {
             "name": name,
@@ -133,7 +111,7 @@ class MetaData(object):
             "format": file_format,
             "size": file_size,
             "updated_at": updated_at,
-            "fields": fields
+            "fields": fields,
         }
 
         return res
@@ -141,14 +119,11 @@ class MetaData(object):
     def append_leaf(self, dataset_file, meta_input):
 
         existing_leaves = self.template["data"]
-        existing_leaves.append(
-            self._generate_leaf(dataset_file, meta_input)
-        )
+        existing_leaves.append(self._generate_leaf(dataset_file, meta_input))
         self.template.update(data=existing_leaves)
 
     def _parse_leaves(self, loaded_meta):
-        """_parse_leaf loads the leaves from the metadata.
-        """
+        """_parse_leaf loads the leaves from the metadata."""
 
         existing_leaves = loaded_meta["data"]
 
@@ -163,8 +138,7 @@ class MetaData(object):
             logger.info("Created ", dataherb_folder)
         except FileExistsError:
             logger.info(
-                dataherb_folder,
-                " already exists! Creating metadata.yml file inside."
+                dataherb_folder, " already exists! Creating metadata.yml file inside."
             )
             pass
 
@@ -172,16 +146,15 @@ class MetaData(object):
 
         if os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
             logger.error(
-                f'File {os.path.join(dataherb_folder, metadata_file)} already exists!'
+                f"File {os.path.join(dataherb_folder, metadata_file)} already exists!"
             )
             raise SystemExit
 
-        with open(os.path.join(dataherb_folder, metadata_file), 'w') as fp:
+        with open(os.path.join(dataherb_folder, metadata_file), "w") as fp:
             documents = yaml.dump(self.template, fp)
 
     def validate(self):
-        """validate the existing metadata file
-        """
+        """validate the existing metadata file"""
 
         dataherb_folder = self.dataherb_folder
         metadata_file = self.metadata_file
@@ -189,24 +162,21 @@ class MetaData(object):
 
         try:
             if not os.path.exists(dataherb_folder):
-                logger.error(
-                    f'Folder {dataherb_folder} does\'nt exists!'
-                )
-                raise Exception(f"Path {dataherb_folder} doesn\'t exist!")
+                logger.error(f"Folder {dataherb_folder} does'nt exists!")
+                raise Exception(f"Path {dataherb_folder} doesn't exist!")
             if not os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
                 logger.error(
-                    f'File {os.path.join(dataherb_folder, metadata_file)} doesn\'nt exists!'
+                    f"File {os.path.join(dataherb_folder, metadata_file)} doesn'nt exists!"
                 )
                 raise SystemExit
 
-            with open(os.path.join(dataherb_folder, metadata_file), 'r') as fp:
+            with open(os.path.join(dataherb_folder, metadata_file), "r") as fp:
                 documents = yaml.load(fp)
 
             logger.info("loaded metadata ", dataherb_folder)
         except FileExistsError:
             logger.info(
-                dataherb_folder,
-                " already exists! Creating metadata.yml file inside."
+                dataherb_folder, " already exists! Creating metadata.yml file inside."
             )
             pass
 
@@ -216,16 +186,14 @@ class MetaData(object):
 
         leaf_validation = LeafValidation()
         for d in data:
-            data_summary.append(
-                leaf_validation.summary(d)
-            )
+            data_summary.append(leaf_validation.summary(d))
 
         summary["data"] = data_summary
 
         return summary
 
 
-class LeafValidation():
+class LeafValidation:
     def __init__(self):
         self.description = "Validate a Leaf in in Herb"
 
@@ -235,7 +203,7 @@ class LeafValidation():
             "format": self._validate__format(d),
             "description": self._validate__description(d),
             "size": self._validate__size(d),
-            "fields": self._validate__fields(d)
+            "fields": self._validate__fields(d),
         }
         return summary
 
@@ -282,9 +250,7 @@ class LeafValidation():
             data_summary_d_format["status"] = STATUS_CODE["ERROR"]
         else:
             data_summary_d_format["status"] = STATUS_CODE["SUCCESS"]
-            data_summary_d_format["message"] = MESSAGE_CODE["EXISTS"](
-                d.get(key)
-            )
+            data_summary_d_format["message"] = MESSAGE_CODE["EXISTS"](d.get(key))
 
         return data_summary_d_format
 
@@ -304,9 +270,7 @@ class LeafValidation():
             data_summary_d_description["status"] = STATUS_CODE["WARNING"]
         else:
             data_summary_d_description["status"] = STATUS_CODE["SUCCESS"]
-            data_summary_d_description["message"] = MESSAGE_CODE["EXISTS"](
-                d.get(key)
-            )
+            data_summary_d_description["message"] = MESSAGE_CODE["EXISTS"](d.get(key))
 
         return data_summary_d_description
 
@@ -326,9 +290,7 @@ class LeafValidation():
             data_summary_d_size["status"] = STATUS_CODE["WARNING"]
         else:
             data_summary_d_size["status"] = STATUS_CODE["SUCCESS"]
-            data_summary_d_size["message"] = MESSAGE_CODE["EXISTS"](
-                d.get(key)
-            )
+            data_summary_d_size["message"] = MESSAGE_CODE["EXISTS"](d.get(key))
 
         return data_summary_d_size
 
@@ -359,14 +321,14 @@ class LeafValidation():
                 data_summary_d_fields["message"] = MESSAGE_CODE["FREE_MESSAGE"](
                     f"{len(d.get(key))} fields: all names and descriptions filled in."
                 )
-            elif (name_missing_counter > 0):
+            elif name_missing_counter > 0:
                 data_summary_d_fields["status"] = STATUS_CODE["ERROR"]
                 data_summary_d_fields["message"] = MESSAGE_CODE["FREE_MESSAGE"](
                     f"{len(d.get(key))} fields: "
                     f"{len(name_missing_counter)} names missing; "
                     f"{len(description_missing_counter)} descriptions missing."
                 )
-            elif (description_missing_counter > 0):
+            elif description_missing_counter > 0:
                 data_summary_d_fields["status"] = STATUS_CODE["WARNING"]
                 data_summary_d_fields["message"] = MESSAGE_CODE["FREE_MESSAGE"](
                     f"{len(d.get(key))} fields: "

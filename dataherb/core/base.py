@@ -21,6 +21,7 @@ class Herb(object):
     """
     Herb is a collection of the dataset.
     """
+
     def __init__(self, herb_meta_json):
         """
         :param herb: the dictionary that specifies the herb
@@ -52,8 +53,7 @@ class Herb(object):
             keywords = [keywords]
 
         herb_for_search = {
-            key:val for key, val in self.herb_meta_json.items()
-            if key in keys
+            key: val for key, val in self.herb_meta_json.items() if key in keys
         }
 
         herb_for_search = _flatten_dict(herb_for_search)
@@ -122,8 +122,7 @@ class Leaf(object):
         self.herb = herb
 
         self.url = "https://raw.githubusercontent.com/{}/master/{}".format(
-            self.herb.repository,
-            self.leaf_meta_json.get("path")
+            self.herb.repository, self.leaf_meta_json.get("path")
         )
         self.format = self.leaf_meta_json.get("format")
         # decode the file content using decode
@@ -142,16 +141,10 @@ class Leaf(object):
         file_content = _get_data_from_url(self.url)
         if not file_content.status_code == 200:
             file_error_msg = "Could not fetch remote file: {}; {}".format(
-                self.url,
-                file_content.status_code
+                self.url, file_content.status_code
             )
-            logger.error(
-                file_error_msg
-            )
-            file_content = json.dumps([{
-                "url": self.url,
-                "error": file_error_msg
-            }])
+            logger.error(file_error_msg)
+            file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
         else:
             file_content = file_content.content
 
@@ -185,10 +178,7 @@ class Leaf(object):
         else:
             logger.error(f"data file format {self.format} is not supported!")
 
-        self.downloaded = {
-            "data": data,
-            "content": file_content
-        }
+        self.downloaded = {"data": data, "content": file_content}
 
     @property
     def data(self):
@@ -223,5 +213,5 @@ class Leaf(object):
             self.herb.id,
             self.leaf_meta_json.get("size"),
             self.path,
-            self.metadata()
+            self.metadata(),
         )
