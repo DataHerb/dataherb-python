@@ -1,8 +1,5 @@
-import logging
+from loguru import logger
 from dataherb.parse.model import MetaData
-
-logging.basicConfig()
-logger = logging.getLogger("dataherb.parse.csv")
 
 
 if __name__ == "__main__":

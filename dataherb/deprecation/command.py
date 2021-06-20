@@ -1,4 +1,4 @@
-from loguru import logger
+import logging
 import os
 from collections import OrderedDict
 import sys
@@ -6,6 +6,7 @@ import git
 
 import click
 import inquirer
+import ruamel.yaml
 from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model import (
@@ -14,20 +15,26 @@ from dataherb.parse.model import (
     STATUS_CODE,
     MetaData,
 )
+from ruamel.yaml.representer import RoundTripRepresenter
+
+
+class MyRepresenter(RoundTripRepresenter):
+    pass
+
+
+ruamel.yaml.add_representer(
+    OrderedDict, MyRepresenter.represent_dict, representer=MyRepresenter
+)
+yaml = ruamel.yaml.YAML()
+yaml.Representer = MyRepresenter
 
 __CWD__ = os.getcwd()
 
+logging.basicConfig()
+logger = logging.getLogger("dataherb.command")
+
+
 def describe_file(file):
-    """
-    describe_file [summary]
-
-    [extended_summary]
-
-    :param file: [description]
-    :type file: [type]
-    :return: [description]
-    :rtype: [type]
-    """
     questions = [
         inquirer.Text("name", message=f"How would you like to name the file: {file}?"),
         inquirer.Text("description", message=f"What is {file} about?"),
@@ -105,6 +112,9 @@ def where_is_dataset():
     dataset_folder = answers.get("dataset_folder")
 
     return dataset_folder
+
+
+# _FLORA.herb("geonames_timezone").leaves.get("dataset/geonames_timezone.csv").data
 
 
 @click.group(invoke_without_command=True)
