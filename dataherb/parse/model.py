@@ -1,14 +1,11 @@
 import csv
-import logging
 import os
 from collections import OrderedDict
 from pathlib import Path
 
 import ruamel.yaml
+from loguru import logger
 from ruamel.yaml.representer import RoundTripRepresenter
-
-logging.basicConfig()
-logger = logging.getLogger("dataherb.parse.model")
 
 IGNORED_FOLDERS_AND_FILES = [".git", ".dataherb", ".vscode"]
 
