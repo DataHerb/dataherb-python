@@ -4,7 +4,6 @@ import json
 from rapidfuzz import fuzz
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-from collections import OrderedDict
 
 import pandas as pd
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
@@ -16,19 +15,43 @@ class Herb(object):
     Herb is a collection of the dataset.
     """
 
-    def __init__(self, datapackage_dict):
+    def __init__(self, meta_dict):
         """
         :param herb_meta_json: the dictionary that specifies the herb
         :type herb_meta_json: dict
         """
-        if isinstance(datapackage_dict, dict):
-            datapackage_dict = OrderedDict(datapackage_dict)
-        self.herb_meta_json = datapackage_dict
+        self.herb_meta_json = meta_dict
+
+        self.datapackage_uri = meta_dict.get("datapackage_uri")
+        self.datapackage = self.herb_meta_json.get("datapackage")
+        if not self.datapackage:
+            self.update_datapackage()
         self.name = self.herb_meta_json.get("name")
         self.description = self.herb_meta_json.get("description")
         self.repository = self.herb_meta_json.get("repository")
         self.id = self.herb_meta_json.get("id")
-        self._get_leaves()
+
+    def update_datapackage(self):
+        """
+        update_datapackage gets the datapackage metadata from the datapackage_uri
+        """
+
+        file_content = _get_data_from_url(self.datapackage_uri)
+
+        if not file_content.status_code == 200:
+            file_error_msg = "Could not fetch remote file: {}; {}".format(
+                self.url, file_content.status_code
+            )
+            logger.error(file_error_msg)
+            file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
+        else:
+            file_content = file_content.json()#.decode(self.decode)
+
+        self.datapackage_meta = file_content
+
+        self.herb_meta_json["datapackage"] = self.datapackage_meta
+
+        return self.datapackage_meta
 
     def search_score(self, keywords, keys=None):
         """
@@ -77,24 +100,15 @@ class Herb(object):
         download downloads the dataset
         """
 
-        data_files = []
+        raise NotImplementedError("Not implemented")
 
-        for leaf_meta in self.herb_meta_json.get("data"):
-            leaf = Leaf(leaf_meta, self)
-            data_files.append(leaf.download())
+        # data_files = []
 
-        return data_files
+        # for leaf_meta in self.herb_meta_json.get("data"):
+        #     leaf = Leaf(leaf_meta, self)
+        #     data_files.append(leaf.download())
 
-    def _get_leaves(self):
-        """
-        leaf fetches the leaf/leaves of the Herb.
-        """
-        self.leaves = {}
-
-        for leaf_meta in self.herb_meta_json.get("data"):
-            leaf_meta_path = leaf_meta.get("path")
-            leaf = Leaf(leaf_meta, self)
-            self.leaves[leaf_meta_path] = leaf
+        # return data_files
 
     def __str__(self):
         meta = self.metadata
@@ -110,6 +124,8 @@ class Herb(object):
 
 class Leaf(object):
     """
+    Deprecated
+
     Leaf is a data file of the Herb.
     """
 
