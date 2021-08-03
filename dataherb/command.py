@@ -6,11 +6,9 @@ import git
 
 import click
 import inquirer
-from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model import (
     IGNORED_FOLDERS_AND_FILES,
-    MESSAGE_CODE,
     STATUS_CODE,
     MetaData,
 )
