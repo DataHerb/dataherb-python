@@ -1,4 +1,6 @@
 from loguru import logger
+import json
+from pathlib import Path
 
 from dataherb.core.base import Herb
 from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
@@ -15,37 +17,35 @@ class Flora(object):
     DataHerb is the container of datasets.
     """
 
-    def __init__(self, api_url=None, flora=None):
+    def __init__(self, flora):
         """
-        :param api_url: API of the DataHerb service, defaults to dataherb official
-        :type api_url: str, optional
-        :param flora: list of Herbs, defaults to everything from the API
-        :type flora: list, optional
+        :param flora: API of the DataHerb service, defaults to dataherb official or list of Herbs, defaults to everything from the API
         """
-        if api_url is None:
-            api_url = _DATAHERB_API_URL
-        self.api_url = api_url
 
-        self.website = "https://dataherb.github.io/flora"
+        if isinstance(flora, str):
+            flora = self._get_flora(flora)
 
-        if flora is None:
-            flora = self._get_flora()
         self.flora = flora
 
-    def _get_flora(self):
+    def _get_flora(self, flora_config):
         """
         _get_flora fetch flora from the provided API.
         """
-        flora_request = _get_data_from_url(self.api_url)
-
-        if not flora_request.status_code == 200:
-            raise Exception(
-                "Could not download dataherb flora from remote. status code: {}".format(
-                    flora_request.status_code
-                )
-            )
+        if Path(flora_config).exists():
+            with open(flora_config, "r") as f:
+                flora = json.load(f)
         else:
-            flora = flora_request.json()
+            # assuming the config is a url if the local file does not exist
+            flora_request = _get_data_from_url(flora_config)
+
+            if not flora_request.status_code == 200:
+                raise Exception(
+                    "Could not download dataherb flora from remote. status code: {}".format(
+                        flora_request.status_code
+                    )
+                )
+            else:
+                flora = flora_request.json()
 
         # Convert herbs to objects
         flora = [Herb(herb) for herb in flora]

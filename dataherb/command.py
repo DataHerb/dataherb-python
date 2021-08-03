@@ -1,108 +1,29 @@
-from loguru import logger
+from logging import log
 import os
-from collections import OrderedDict
 import sys
-import git
+from dataherb.cmd.create import describe_dataset, describe_file, where_is_dataset
+from dataherb.cmd.configs import load_dataherb_config
+from collections import OrderedDict
+from pathlib import Path
 
 import click
-import inquirer
+import git
+from loguru import logger
+
 from dataherb.flora import Flora
-from dataherb.parse.model import (
-    IGNORED_FOLDERS_AND_FILES,
-    STATUS_CODE,
-    MetaData,
-)
+from dataherb.parse.model import STATUS_CODE, MetaData
 
 __CWD__ = os.getcwd()
 
-def describe_file(file):
-    """
-    describe_file [summary]
-
-    [extended_summary]
-
-    :param file: [description]
-    :type file: [type]
-    :return: [description]
-    :rtype: [type]
-    """
-    questions = [
-        inquirer.Text("name", message=f"How would you like to name the file: {file}?"),
-        inquirer.Text("description", message=f"What is {file} about?"),
-        inquirer.Text(
-            "updated_at",
-            message=f"When was {file} last updated? In ISO date format such as 2020-02-17.",
-        ),
-    ]
-
-    answers = inquirer.prompt(questions)
-    meta = {
-        "name": answers.get("name"),
-        "description": answers.get("description"),
-        "updated_at": answers.get("updated_at"),
-    }
-
-    return meta
-
-
-def describe_dataset():
-    """
-    describe_dataset asks the user to specify some basic info about the dataset
-    """
-    questions = [
-        inquirer.Text("name", message="How would you like to name the dataset?"),
-        inquirer.Text(
-            "description",
-            message="What is the dataset about? This will be the description of the dataset.",
-        ),
-    ]
-
-    answers = inquirer.prompt(questions)
-    meta = {
-        "name": answers.get("name", ""),
-        "description": answers.get("description", ""),
-    }
-
-    return meta
-
-
-def where_is_dataset():
-    """
-    where_is_dataset asks the user where the dataset is located.
-    """
-    try:
-        folders = []
-        for root, dirs, files in os.walk(__CWD__):
-            for d in dirs:
-                if d not in IGNORED_FOLDERS_AND_FILES:
-                    folders.append(os.path.relpath(os.path.join(root, d), "."))
-    except Exception as e:
-        logger.error("Can not get a list of folders in current directory.")
-        folders = []
-
-    folders = [i for i in folders if not i.startswith(".")]
-
-    if folders:
-        questions = [
-            inquirer.List(
-                "dataset_folder",
-                message="Which folder contains the data file?",
-                choices=folders,
-            )
-        ]
-    else:
-        questions = [
-            inquirer.Path(
-                "dataset_folder",
-                message="Which folder will you place the data files?",
-                path_type=inquirer.Path.DIRECTORY,
-            )
-        ]
-
-    answers = inquirer.prompt(questions)
-    dataset_folder = answers.get("dataset_folder")
-
-    return dataset_folder
+CONFIG = load_dataherb_config()
+logger.debug(CONFIG)
+WD = CONFIG['workdir']
+which_flora = CONFIG.get("default", {}).get("flora")
+if which_flora:
+    which_flora = str(Path(WD)/"flora"/Path(which_flora + ".json"))
+    logger.debug(f"Using flora path: {which_flora}")
+    if not os.path.exists(which_flora):
+        raise Exception(f"flora config {which_flora} does not exist")
 
 
 @click.group(invoke_without_command=True)
@@ -118,12 +39,13 @@ def dataherb(ctx):
 @dataherb.command()
 @click.argument("keywords", required=False)
 @click.option("--id", "-i", default=False)
-def search(id=None, keywords=None):
+@click.option("--flora", "-f", default=which_flora)
+def search(id=None, keywords=None, flora=None):
     """
     search datasets on DataHerb by keywords or id
     """
     SHOW_KEYS = ["name", "description", "contributors"]
-    fl = Flora()
+    fl = Flora(flora_config=flora)
     if not id:
         click.echo("Searching Herbs in DataHerb Flora ...")
         results = fl.search(keywords)
@@ -195,7 +117,7 @@ def create():
     print(dataset_basics)
     md.template.update(dataset_basics)
 
-    dataset_folder = where_is_dataset()
+    dataset_folder = where_is_dataset(__CWD__)
     print(f"Looking into the folder {dataset_folder} for data files...")
 
     dataset_files = md.parse_structure(dataset_folder)
