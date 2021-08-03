@@ -211,4 +211,3 @@ class Leaf(object):
             self.path,
             self.metadata(),
         )
-

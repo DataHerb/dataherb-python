@@ -1,3 +1,4 @@
+docutils>=0.13.1
 pandas>=0.23
 requests>=2.22.0
 rapidfuzz>=0.2.2
