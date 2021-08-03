@@ -8,3 +8,4 @@ inquirer>=2.6.3
 colorama>=0.4.3
 GitPython>=3.1.0
 loguru>=0.5.3
+datapackage>=1.15.2

@@ -1,7 +1,7 @@
 import os
 
 import inquirer
-from dataherb.parse.model import IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MetaData
+from dataherb.parse.model_json import IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MetaData
 from loguru import logger
 
 
@@ -40,17 +40,37 @@ def describe_dataset():
     describe_dataset asks the user to specify some basic info about the dataset
     """
     questions = [
+        inquirer.List(
+                "source",
+                message="Where is/will be the dataset synced to?",
+                choices=["git", "s3"],
+        ),
         inquirer.Text("name", message="How would you like to name the dataset?"),
         inquirer.Text(
             "description",
             message="What is the dataset about? This will be the description of the dataset.",
         ),
+        inquirer.Text(
+            "uri",
+            message="What is the dataset's URI? This will be the URI of the dataset.",
+        )
     ]
 
     answers = inquirer.prompt(questions)
+
+    if answers.get("source") == "git":
+        git_repo_link = answers.get("uri")
+        git_repo = "/".join(git_repo_link[:-4].split("/")[-2:])
+
+        # https://github.com/DataHerb/dataset-data-science-job.git
+        datapackage_uri = f"https://raw.githubusercontent.com/{git_repo}/main/datapackage.json"
+
     meta = {
+        "source": answers.get("source"),
         "name": answers.get("name", ""),
         "description": answers.get("description", ""),
+        "uri": answers.get("uri", ""),
+        "datapackage_uri": datapackage_uri
     }
 
     return meta
