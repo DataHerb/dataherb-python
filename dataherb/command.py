@@ -5,13 +5,14 @@ from dataherb.cmd.create import describe_dataset, describe_file, where_is_datase
 from dataherb.cmd.configs import load_dataherb_config
 from collections import OrderedDict
 from pathlib import Path
+from datapackage import Package
 
 import click
 import git
 from loguru import logger
 
 from dataherb.flora import Flora
-from dataherb.parse.model import STATUS_CODE, MetaData
+from dataherb.parse.model_json import STATUS_CODE, MetaData
 
 __CWD__ = os.getcwd()
 
@@ -98,7 +99,7 @@ def download(id, flora):
 @dataherb.command()
 @click.confirmation_option(
     prompt=f"Your current working directory is {__CWD__}\n"
-    "The .dataherb folder will be created right here.\n"
+    "A datapackage.json file will be created right here.\n"
     "Are you sure this is the correct path?"
 )
 def create():
@@ -106,28 +107,29 @@ def create():
     creates metadata for current dataset
     """
 
-    md = MetaData()
+    md = MetaData(folder=__CWD__)
 
     dataset_basics = describe_dataset()
     print(dataset_basics)
-    md.template.update(dataset_basics)
+    md.metadata.update(dataset_basics)
 
-    dataset_folder = where_is_dataset(__CWD__)
-    print(f"Looking into the folder {dataset_folder} for data files...")
+    pkg = Package()
+    pkg.infer('**/*.csv')
+    pkg_descriptor = {
+        "datapackage": pkg.descriptor
+    }
 
-    dataset_files = md.parse_structure(dataset_folder)
-    print(f"found {dataset_files} in {dataset_folder}")
+    md.metadata.update(pkg_descriptor)
 
-    for file in dataset_files:
-        file_meta = describe_file(file)
-        md.append_leaf(os.path.join(dataset_folder, file), file_meta)
+    # dataset_folder = where_is_dataset(__CWD__)
+    # print(f"Looking into the folder {dataset_folder} for data files...")
 
     md.create()
 
     click.echo(
-        "The .dataherb folder and metadata.yml file has been created inside \n"
+        "The datapackage.json file has been created inside \n"
         f"{__CWD__}\n"
-        "Please review the metadata.yml file and update other necessary fields of your desire."
+        "Please review the datapackage.json file and update other necessary fields."
     )
 
 
