@@ -1,20 +1,14 @@
+from loguru import logger
 import io
 import json
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-import ruamel.yaml as yaml
-import logging
 from collections import OrderedDict
 
 import pandas as pd
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.utils.data import flatten_dict as _flatten_dict
-from fuzzywuzzy import fuzz, process
-
-
-logging.basicConfig()
-logger = logging.getLogger("dataherb.core.base")
 
 
 class Herb(object):
@@ -22,14 +16,14 @@ class Herb(object):
     Herb is a collection of the dataset.
     """
 
-    def __init__(self, herb_meta_json):
+    def __init__(self, datapackage_dict):
         """
-        :param herb: the dictionary that specifies the herb
-        :type herb: dict
+        :param herb_meta_json: the dictionary that specifies the herb
+        :type herb_meta_json: dict
         """
-        if isinstance(herb_meta_json, dict):
-            herb_meta_json = OrderedDict(herb_meta_json)
-        self.herb_meta_json = herb_meta_json
+        if isinstance(datapackage_dict, dict):
+            datapackage_dict = OrderedDict(datapackage_dict)
+        self.herb_meta_json = datapackage_dict
         self.name = self.herb_meta_json.get("name")
         self.description = self.herb_meta_json.get("description")
         self.repository = self.herb_meta_json.get("repository")
@@ -70,6 +64,7 @@ class Herb(object):
 
         return max_score
 
+    @property
     def metadata(self, keys=None):
         """
         metadata formats the metadata of the herb
@@ -102,11 +97,12 @@ class Herb(object):
             self.leaves[leaf_meta_path] = leaf
 
     def __str__(self):
-        meta = self.metadata()
+        meta = self.metadata
         authors = meta.get("contributors", [])
         authors = ", ".join([author.get("name") for author in authors])
         return (
             f"DataHerb ID: {meta.get('id')}\n"
+            f"name: {meta.get('name')}"
             f"description: {meta.get('description')}\n"
             f"contributors: {authors}"
         )
@@ -215,3 +211,4 @@ class Leaf(object):
             self.path,
             self.metadata(),
         )
+
