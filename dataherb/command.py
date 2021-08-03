@@ -38,9 +38,9 @@ def dataherb(ctx):
 
 @dataherb.command()
 @click.argument("keywords", required=False)
-@click.option("--id", "-i", default=False)
+@click.option("--id", "-i", required=False)
 @click.option("--flora", "-f", default=which_flora)
-def search(id=None, keywords=None, flora=None):
+def search(flora, id=None, keywords=None):
     """
     search datasets on DataHerb by keywords or id
     """
@@ -63,36 +63,36 @@ def search(id=None, keywords=None, flora=None):
         if not result:
             click.echo(f"Could not find dataset with id {id}")
         else:
-            result_metadata = result.metadata()
+            result_metadata = result.metadata
             click.echo(f'DataHerb ID: {result_metadata.get("id")}')
-            click.echo(yaml.dump(result_metadata, sys.stdout))
+            click.echo(result_metadata)
 
 
 @dataherb.command()
 @click.argument("id", required=True)
-def download(id):
+@click.option("--flora", "-f", default=which_flora)
+def download(id, flora):
     """
     download dataset using id
     """
 
-    fl = Flora()
+    fl = Flora(flora=flora)
     click.echo(f"Fetching Herbs {id} in DataHerb Flora ...")
     result = fl.herb(id)
     if not result:
         click.echo(f"Could not find dataset with id {id}")
     else:
-        result_metadata = result.metadata()
+        result_metadata = result.metadata
         click.echo(f'Downloading DataHerb ID: {result_metadata.get("id")}')
-        result_repository = result_metadata.get("repository")
-        dest_folder = f"./{result_repository}"
+        result_uri = result_metadata.get("uri")
+        result_id = result_metadata.get("id")
+        dest_folder = str(Path(WD) / result_id)
         if os.path.exists(dest_folder):
             click.echo(f"Can not download dataset to {dest_folder}: folder exists.")
         else:
-            dest_folder_parent = f"./{result_repository.split('/')[0]}"
-            os.makedirs(dest_folder_parent)
-            git.Git(dest_folder_parent).clone(
-                f"https://github.com/{result_repository}.git"
-            )
+            # dest_folder_parent = f"./{result_repository.split('/')[0]}"
+            os.makedirs(dest_folder)
+            git.Git(dest_folder).clone(result_uri)
 
 
 @dataherb.command()

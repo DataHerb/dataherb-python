@@ -81,7 +81,7 @@ class Flora(object):
 
             herb = herb.get("herb")
 
-            return herb.metadata()
+            return herb.metadata
         else:
             return
 
