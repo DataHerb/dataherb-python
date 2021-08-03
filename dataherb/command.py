@@ -45,7 +45,7 @@ def search(id=None, keywords=None, flora=None):
     search datasets on DataHerb by keywords or id
     """
     SHOW_KEYS = ["name", "description", "contributors"]
-    fl = Flora(flora_config=flora)
+    fl = Flora(flora=flora)
     if not id:
         click.echo("Searching Herbs in DataHerb Flora ...")
         results = fl.search(keywords)
@@ -54,14 +54,9 @@ def search(id=None, keywords=None, flora=None):
             click.echo(f"Could not find dataset related to {keywords}")
         else:
             for result in results:
-                result_metadata = result.get("herb").metadata()
+                result_metadata = result.get("herb").metadata
                 click.echo(f'DataHerb ID: {result_metadata.get("id")}')
-                click.echo(
-                    yaml.dump(
-                        OrderedDict((key, result_metadata[key]) for key in SHOW_KEYS),
-                        sys.stdout,
-                    )
-                )
+                click.echo(result_metadata)
     else:
         click.echo(f"Fetching Herbs {id} in DataHerb Flora ...")
         result = fl.herb(id)
