@@ -38,7 +38,7 @@ class Herb(object):
         self._from_meta_dict(self.herb_meta_json)
 
     def _from_meta_dict(self, meta_dict):
-        self.datapackage_uri = meta_dict.get("datapackage_uri")
+        self.metadata_uri = meta_dict.get("metadata_uri")
         self.datapackage = meta_dict.get("datapackage")
         if not self.datapackage:
             self.update_datapackage()
@@ -49,10 +49,10 @@ class Herb(object):
 
     def update_datapackage(self):
         """
-        update_datapackage gets the datapackage metadata from the datapackage_uri
+        update_datapackage gets the datapackage metadata from the metadata_uri
         """
 
-        file_content = _get_data_from_url(self.datapackage_uri)
+        file_content = _get_data_from_url(self.metadata_uri)
 
         if not file_content.status_code == 200:
             file_error_msg = "Could not fetch remote file: {}; {}".format(

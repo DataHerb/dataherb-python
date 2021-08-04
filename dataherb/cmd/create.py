@@ -36,26 +36,26 @@ def describe_file(file):
     return meta
 
 
-def get_datapackage_uri(answers):
+def get_metadata_uri(answers):
     """
-    get_datapackage_uri reconstructs the datapackage uri from the user's answers.
+    get_metadata_uri reconstructs the datapackage uri from the user's answers.
     """
 
     if answers.get("source") == "git":
         git_repo_link = answers.get("uri")
         git_repo = "/".join(git_repo_link[:-4].split("/")[-2:])
-        datapackage_uri = (
-            f"https://raw.githubusercontent.com/{git_repo}/main/datapackage.json"
+        metadata_uri = (
+            f"https://raw.githubusercontent.com/{git_repo}/main/dataherb.json"
         )
     elif answers.get("source") == "s3":
         s3_uri = answers.get("uri", "")
         if s3_uri.endswith("/"):
             s3_uri = s3_uri[:-1]
-        datapackage_uri = f"{s3_uri}/datapackage.json"
+        metadata_uri = f"{s3_uri}/dataherb.json"
     else:
         click.echo(f'source type {answers.get("source")} is not supported.')
 
-    return datapackage_uri
+    return metadata_uri
 
 
 def describe_dataset():
@@ -84,14 +84,14 @@ def describe_dataset():
 
     answers = inquirer.prompt(questions)
 
-    datapackage_uri = get_datapackage_uri(answers)
+    metadata_uri = get_metadata_uri(answers)
 
     meta = {
         "source": answers.get("source"),
         "name": answers.get("name", ""),
         "description": answers.get("description", ""),
         "uri": answers.get("uri", ""),
-        "datapackage_uri": datapackage_uri,
+        "metadata_uri": metadata_uri,
     }
 
     return meta

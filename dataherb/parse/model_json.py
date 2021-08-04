@@ -30,7 +30,7 @@ STATUS_CODE = {
 class MetaData(object):
     def __init__(self, folder):
         self.dataherb_folder = folder
-        self.metadata_file = "datapackage.json"
+        self.metadata_file = "dataherb.json"
         self.metadata = {}
 
     def load(self):
@@ -44,7 +44,7 @@ class MetaData(object):
         logger.debug(f"Loaded metadata: {self.metadata}")
 
     def create(self):
-        """creates datapackage.json file"""
+        """creates dataherb.json file"""
         # create .dataherb folder
         dataherb_folder = self.dataherb_folder
         try:
@@ -53,7 +53,7 @@ class MetaData(object):
         except FileExistsError:
             logger.info(
                 dataherb_folder,
-                " already exists! Creating datapackage.json file inside.",
+                " already exists! Creating dataherb.json file inside.",
             )
             pass
 
