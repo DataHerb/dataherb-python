@@ -1,0 +1,3 @@
+mkdocs-material==7.1.8
+python-slugify==5.0.2
+mkdocs-macros-plugin==0.5.12

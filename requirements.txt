@@ -10,3 +10,6 @@ loguru>=0.5.3
 datapackage>=1.15.2
 awscli==1.20.13
 docutils<0.16,>=0.10
+mkdocs-material==7.1.8
+python-slugify==5.0.2
+mkdocs-macros-plugin==0.5.12

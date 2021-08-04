@@ -7,6 +7,7 @@ from pathlib import Path
 from datapackage import Package
 from dataherb.cmd.sync_s3 import upload_dataset_to_s3
 from dataherb.cmd.sync_git import upload_dataset_to_git
+from dataherb.serve.save_mkdocs import SaveMkDocs
 
 import click
 import git
@@ -69,6 +70,16 @@ def search(flora, id=None, keywords=None):
             result_metadata = result.metadata
             click.echo(f'DataHerb ID: {result_metadata.get("id")}')
             click.echo(result_metadata)
+
+
+@dataherb.command()
+@click.option("--flora", "-f", default=which_flora)
+@click.option("--workdir", "-w", default=WD, required=True)
+def serve(flora, workdir):
+    fl = Flora(flora=flora)
+    mk = SaveMkDocs(flora=fl, workdir=workdir)
+    mk.save_all()
+
 
 
 @dataherb.command()
