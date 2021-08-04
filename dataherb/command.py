@@ -81,7 +81,6 @@ def serve(flora, workdir):
     mk.save_all()
 
 
-
 @dataherb.command()
 @click.argument("id", required=True)
 @click.option("--flora", "-f", default=which_flora)
@@ -128,7 +127,7 @@ def create(flora):
             f"A dataherb.json file already exists in {__CWD__}. "
             f"Shall we use the existing dataherb.json?",
             default=True,
-            show_default=True
+            show_default=True,
         )
 
     fl = Flora(flora=flora)
