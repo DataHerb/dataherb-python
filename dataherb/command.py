@@ -101,7 +101,7 @@ def download(id, flora):
 @dataherb.command()
 @click.confirmation_option(
     prompt=f"Your current working directory is {__CWD__}\n"
-    "A datapackage.json file will be created right here.\n"
+    "A dataherb.json file will be created right here.\n"
     "Are you sure this is the correct path?"
 )
 @click.option("--flora", "-f", default=which_flora)
@@ -112,10 +112,10 @@ def create(flora):
 
     use_existing_dpkg = False
 
-    if (Path(__CWD__) / "datapackage.json").exists():
+    if (Path(__CWD__) / "dataherb.json").exists():
         use_existing_dpkg = click.confirm(
-            f"A datapackage.json file already exists in {__CWD__}. "
-            f"Shall we use the existing datapackage.json?",
+            f"A dataherb.json file already exists in {__CWD__}. "
+            f"Shall we use the existing dataherb.json?",
             default=True,
             show_default=True
         )
@@ -124,7 +124,7 @@ def create(flora):
     md = MetaData(folder=__CWD__)
 
     if use_existing_dpkg:
-        logger.debug("Using existing datapackage.json ...")
+        logger.debug("Using existing dataherb.json ...")
         md.load()
     else:
         dataset_basics = describe_dataset()
@@ -140,9 +140,9 @@ def create(flora):
         md.create()
 
         click.echo(
-            "The datapackage.json file has been created inside \n"
+            "The dataherb.json file has been created inside \n"
             f"{__CWD__}\n"
-            "Please review the datapackage.json file and update other necessary fields."
+            "Please review the dataherb.json file and update other necessary fields."
         )
 
     hb = Herb(md.metadata)
