@@ -6,6 +6,8 @@ import time
 import yaml
 
 from dataherb.serve.models import SaveModel
+from dataherb.serve.mkdocs_templates import site_config as _site_config
+from dataherb.serve.mkdocs_templates import index_template as _index_template
 
 from loguru import logger
 from slugify import slugify
@@ -92,6 +94,23 @@ class SaveMkDocs(SaveModel):
 
         logger.info(f"Saved {herb_metadata} to {path}")
 
+    def create_mkdocs_yaml(self):
+
+        mkdocs_folder = Path(self.workdir) / "serve"
+        mkdocs_yaml_path = mkdocs_folder / "mkdocs.yml"
+
+        with open(mkdocs_yaml_path, "w") as fp:
+            fp.write(_site_config)
+
+    def create_mkdocs_index(self):
+
+        mkdocs_folder = Path(self.workdir) / "serve"
+        mkdocs_index_path = mkdocs_folder / "herbs" / "index.md"
+
+        with open(mkdocs_index_path, "w") as fp:
+            fp.write(_index_template)
+
+
     def save_all(self) -> None:
         """
         save_all saves all files necessary
@@ -114,8 +133,9 @@ class SaveMkDocs(SaveModel):
                 else:
                     cache_folder.mkdir(parents=True)
                 md_folder.rename(cache_folder / f"serve.{int(time.time())}")
+                md_folder.mkdir(parents=True)
         else:
-            md_folder.mkdir()
+            md_folder.mkdir(parents=True)
 
         for herb in self.flora.flora:
             herb_id = slugify(herb.id)
@@ -123,6 +143,9 @@ class SaveMkDocs(SaveModel):
             herb_md_path = os.path.join(md_folder, f"{herb_id}.md")
             # generate markdown files
             self.save_one_markdown(herb, herb_md_path)
+
+        self.create_mkdocs_yaml()
+        self.create_mkdocs_index()
 
 
 if __name__ == "__main__":
