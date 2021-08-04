@@ -1,4 +1,5 @@
 from loguru import logger
+import click
 import io
 import json
 from rapidfuzz import fuzz
@@ -42,10 +43,10 @@ class Herb(object):
             file_error_msg = "Could not fetch remote file: {}; {}".format(
                 self.url, file_content.status_code
             )
-            logger.error(file_error_msg)
-            file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
+            click.ClickException(file_error_msg)
+            # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
         else:
-            file_content = file_content.json()#.decode(self.decode)
+            file_content = file_content.json()  # .decode(self.decode)
 
         self.datapackage_meta = file_content
 
@@ -155,8 +156,8 @@ class Leaf(object):
             file_error_msg = "Could not fetch remote file: {}; {}".format(
                 self.url, file_content.status_code
             )
-            logger.error(file_error_msg)
-            file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
+            click.ClickException(file_error_msg)
+            # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
         else:
             file_content = file_content.content
 
