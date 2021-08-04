@@ -10,6 +10,8 @@ import pandas as pd
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.utils.data import flatten_dict as _flatten_dict
 
+from dataherb.parse.model_json import MetaData
+
 
 class Herb(object):
     """
@@ -21,16 +23,29 @@ class Herb(object):
         :param herb_meta_json: the dictionary that specifies the herb
         :type herb_meta_json: dict
         """
-        self.herb_meta_json = meta_dict
+        if isinstance(meta_dict, dict):
+            self.herb_meta_json = meta_dict
+        elif isinstance(meta_dict, MetaData):
+            logger.debug("get herb_meta_json from MetaData ...")
+            self.herb_meta_json = meta_dict.metadata
+        else:
+            logger.debug(f"input meta type ({type(meta_dict)}) is not supported.")
+            click.BadParameter(
+                f"input meta type ({type(meta_dict)}) is not supported.",
+                param=meta_dict,
+            )
 
+        self._from_meta_dict(self.herb_meta_json)
+
+    def _from_meta_dict(self, meta_dict):
         self.datapackage_uri = meta_dict.get("datapackage_uri")
-        self.datapackage = self.herb_meta_json.get("datapackage")
+        self.datapackage = meta_dict.get("datapackage")
         if not self.datapackage:
             self.update_datapackage()
-        self.name = self.herb_meta_json.get("name")
-        self.description = self.herb_meta_json.get("description")
-        self.repository = self.herb_meta_json.get("repository")
-        self.id = self.herb_meta_json.get("id")
+        self.name = meta_dict.get("name")
+        self.description = meta_dict.get("description")
+        self.repository = meta_dict.get("repository")
+        self.id = meta_dict.get("id")
 
     def update_datapackage(self):
         """
@@ -94,7 +109,7 @@ class Herb(object):
         metadata formats the metadata of the herb
         """
 
-        return self.herb_meta_json
+        return self.herb_meta_json.copy()
 
     def download(self):
         """

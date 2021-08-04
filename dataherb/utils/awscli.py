@@ -1,5 +1,6 @@
 import os
 import click
+
 try:
     from awscli.clidriver import create_clidriver
 except ImportError as e:

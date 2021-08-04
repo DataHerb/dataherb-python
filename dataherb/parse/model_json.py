@@ -34,11 +34,14 @@ class MetaData(object):
         self.metadata = {}
 
     def load(self):
-        """load the existing metadata file"""
-
-        logger.debug(f"Load metadata from file: {self.metadata_file}")
-        with open(self.metadata_file, "r") as fp:
+        """load the existing datapackage file"""
+        folder = self.dataherb_folder
+        metadata_file = Path(folder) / self.metadata_file
+        logger.debug(f"Load metadata from file: {metadata_file}")
+        with open(metadata_file, "r") as fp:
             self.metadata = json.load(fp)
+
+        logger.debug(f"Loaded metadata: {self.metadata}")
 
     def create(self):
         """creates datapackage.json file"""
