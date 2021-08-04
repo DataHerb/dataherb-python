@@ -3,6 +3,7 @@ import os
 import click
 from pathlib import Path
 import time
+import yaml
 
 from dataherb.serve.models import SaveModel
 
@@ -15,11 +16,7 @@ class SaveMkDocs(SaveModel):
     SaveMkDocs saves the dataset files from source as MkDocs files
     """
 
-    def __init__(
-        self,
-        flora,
-        workdir
-    ):
+    def __init__(self, flora, workdir):
 
         super().__init__(flora, workdir)
 
@@ -46,6 +43,26 @@ class SaveMkDocs(SaveModel):
 
         logger.info(f"Will save {herb.id} to {path}")
 
+        herb_metadata = herb.metadata.copy()
+        herb_metadata["title"] = herb_metadata.get("name")
+        md_meta = yaml.dump(herb_metadata)
+
+        metadata_mkdocs = f"---\n"
+        metadata_mkdocs += md_meta
+        metadata_mkdocs += "---\n  "
+
+        with open(path, "w") as fp:
+            fp.write(metadata_mkdocs)
+
+        logger.info(f"Saved {herb_metadata} to {path}")
+
+    def save_one_markdown_alt(self, herb, path):
+        """
+        save_one_markdown generates a markdown file
+        """
+
+        logger.info(f"Will save {herb.id} to {path}")
+
         herb_metadata = herb.metadata
 
         # generate tilte, description, keywords, and categories
@@ -58,7 +75,9 @@ class SaveMkDocs(SaveModel):
 
         metadata_mkdocs = f'---\ntitle: "{metadata_title}"\n'
         if metadata_description:
-            metadata_mkdocs = metadata_mkdocs + f'description: "{metadata_description}"\n'
+            metadata_mkdocs = (
+                metadata_mkdocs + f'description: "{metadata_description}"\n'
+            )
         if keywords_mkdocs:
             metadata_mkdocs = metadata_mkdocs + keywords_mkdocs
         if metadata_category:
@@ -67,7 +86,6 @@ class SaveMkDocs(SaveModel):
 
         # end the metadata region
         metadata_mkdocs = metadata_mkdocs + "---\n  "
-
 
         with open(path, "w") as fp:
             fp.write(metadata_mkdocs)
@@ -87,7 +105,7 @@ class SaveMkDocs(SaveModel):
             is_remove = click.confirm(
                 f"{md_folder} exists, remove it and create new?",
                 default=True,
-                show_default=True
+                show_default=True,
             )
             if is_remove:
                 cache_folder = md_folder.parent / "cache"
@@ -95,12 +113,9 @@ class SaveMkDocs(SaveModel):
                     pass
                 else:
                     cache_folder.mkdir(parents=True)
-                md_folder.rename(
-                    cache_folder / f"serve.{int(time.time())}"
-                )
+                md_folder.rename(cache_folder / f"serve.{int(time.time())}")
         else:
             md_folder.mkdir()
-
 
         for herb in self.flora.flora:
             herb_id = slugify(herb.id)

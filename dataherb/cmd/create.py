@@ -69,9 +69,7 @@ def describe_dataset():
             choices=["git", "s3"],
         ),
         inquirer.Text("name", message="How would you like to name the dataset?"),
-        inquirer.Text(
-            "id", message="Please specify a unique id for the dataset"
-        ),
+        inquirer.Text("id", message="Please specify a unique id for the dataset"),
         inquirer.Text(
             "description",
             message="What is the dataset about? This will be the description of the dataset.",

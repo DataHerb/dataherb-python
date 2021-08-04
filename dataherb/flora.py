@@ -94,7 +94,7 @@ class Flora(object):
 
         with open(path, "w") as fp:
             json.dump(
-                serialized_flora, fp, sort_keys=True, indent=4, separators=(',', ': ')
+                serialized_flora, fp, sort_keys=True, indent=4, separators=(",", ": ")
             )
 
     def search(self, keywords):
