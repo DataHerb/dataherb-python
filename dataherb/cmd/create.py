@@ -1,7 +1,8 @@
 import os
+import click
 
 import inquirer
-from dataherb.parse.model_json import IGNORED_FOLDERS_AND_FILES, STATUS_CODE, MetaData
+from dataherb.parse.model_json import IGNORED_FOLDERS_AND_FILES
 from loguru import logger
 
 
@@ -35,15 +36,37 @@ def describe_file(file):
     return meta
 
 
+def get_datapackage_uri(answers):
+    """
+    get_datapackage_uri reconstructs the datapackage uri from the user's answers.
+    """
+
+    if answers.get("source") == "git":
+        git_repo_link = answers.get("uri")
+        git_repo = "/".join(git_repo_link[:-4].split("/")[-2:])
+        datapackage_uri = (
+            f"https://raw.githubusercontent.com/{git_repo}/main/datapackage.json"
+        )
+    elif answers.get("source") == "s3":
+        s3_uri = answers.get("uri", "")
+        if s3_uri.endswith("/"):
+            s3_uri = s3_uri[:-1]
+        datapackage_uri = f"{s3_uri}/datapackage.json"
+    else:
+        click.echo(f'source type {answers.get("source")} is not supported.')
+
+    return datapackage_uri
+
+
 def describe_dataset():
     """
     describe_dataset asks the user to specify some basic info about the dataset
     """
     questions = [
         inquirer.List(
-                "source",
-                message="Where is/will be the dataset synced to?",
-                choices=["git", "s3"],
+            "source",
+            message="Where is/will be the dataset synced to?",
+            choices=["git", "s3"],
         ),
         inquirer.Text("name", message="How would you like to name the dataset?"),
         inquirer.Text(
@@ -53,24 +76,19 @@ def describe_dataset():
         inquirer.Text(
             "uri",
             message="What is the dataset's URI? This will be the URI of the dataset.",
-        )
+        ),
     ]
 
     answers = inquirer.prompt(questions)
 
-    if answers.get("source") == "git":
-        git_repo_link = answers.get("uri")
-        git_repo = "/".join(git_repo_link[:-4].split("/")[-2:])
-
-        # https://github.com/DataHerb/dataset-data-science-job.git
-        datapackage_uri = f"https://raw.githubusercontent.com/{git_repo}/main/datapackage.json"
+    datapackage_uri = get_datapackage_uri(answers)
 
     meta = {
         "source": answers.get("source"),
         "name": answers.get("name", ""),
         "description": answers.get("description", ""),
         "uri": answers.get("uri", ""),
-        "datapackage_uri": datapackage_uri
+        "datapackage_uri": datapackage_uri,
     }
 
     return meta

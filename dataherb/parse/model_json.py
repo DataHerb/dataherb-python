@@ -33,8 +33,15 @@ class MetaData(object):
         self.metadata_file = "datapackage.json"
         self.metadata = {}
 
-    def create(self):
+    def load(self):
+        """load the existing metadata file"""
 
+        logger.debug(f"Load metadata from file: {self.metadata_file}")
+        with open(self.metadata_file, "r") as fp:
+            self.metadata = json.load(fp)
+
+    def create(self):
+        """creates datapackage.json file"""
         # create .dataherb folder
         dataherb_folder = self.dataherb_folder
         try:
@@ -42,7 +49,8 @@ class MetaData(object):
             logger.info("Created ", dataherb_folder)
         except FileExistsError:
             logger.info(
-                dataherb_folder, " already exists! Creating datapackage.json file inside."
+                dataherb_folder,
+                " already exists! Creating datapackage.json file inside.",
             )
             pass
 
@@ -55,7 +63,7 @@ class MetaData(object):
             raise SystemExit
 
         with open(os.path.join(dataherb_folder, metadata_file), "w") as fp:
-            documents = json.dump(self.metadata, fp)
+            documents = json.dump(self.metadata, fp, indent=4)
 
     def validate(self):
         """validate the existing metadata file"""
@@ -91,4 +99,3 @@ class MetaData(object):
         summary["data"] = data_summary
 
         return summary
-

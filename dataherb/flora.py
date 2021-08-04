@@ -9,8 +9,6 @@ from dataherb.core.search import (
 )
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 
-_DATAHERB_API_URL = "https://dataherb.github.io/api/flora.json"
-
 
 class Flora(object):
     """

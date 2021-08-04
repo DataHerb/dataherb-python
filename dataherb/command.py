@@ -1,11 +1,12 @@
 from logging import log
 import os
 import sys
-from dataherb.cmd.create import describe_dataset, describe_file, where_is_dataset
+from dataherb.cmd.create import describe_dataset
 from dataherb.cmd.configs import load_dataherb_config
-from collections import OrderedDict
 from pathlib import Path
 from datapackage import Package
+from dataherb.cmd.sync_s3 import upload_dataset_to_s3
+from dataherb.cmd.sync_git import upload_dataset_to_git
 
 import click
 import git
@@ -18,10 +19,10 @@ __CWD__ = os.getcwd()
 
 CONFIG = load_dataherb_config()
 logger.debug(CONFIG)
-WD = CONFIG['workdir']
+WD = CONFIG["workdir"]
 which_flora = CONFIG.get("default", {}).get("flora")
 if which_flora:
-    which_flora = str(Path(WD)/"flora"/Path(which_flora + ".json"))
+    which_flora = str(Path(WD) / "flora" / Path(which_flora + ".json"))
     logger.debug(f"Using flora path: {which_flora}")
     if not os.path.exists(which_flora):
         raise Exception(f"flora config {which_flora} does not exist")
@@ -114,10 +115,8 @@ def create():
     md.metadata.update(dataset_basics)
 
     pkg = Package()
-    pkg.infer('**/*.csv')
-    pkg_descriptor = {
-        "datapackage": pkg.descriptor
-    }
+    pkg.infer("**/*.csv")
+    pkg_descriptor = {"datapackage": pkg.descriptor}
 
     md.metadata.update(pkg_descriptor)
 
@@ -131,6 +130,44 @@ def create():
         f"{__CWD__}\n"
         "Please review the datapackage.json file and update other necessary fields."
     )
+
+
+@dataherb.command()
+@click.confirmation_option(
+    prompt=f"Your current working directory is {__CWD__}\n"
+    "All contents in this folder will be uploaded.\n"
+    "Are you sure this is the correct path?"
+)
+def upload():
+    """
+    upload dataset in the current folder to the remote destination
+    """
+
+    md = MetaData(folder=__CWD__)
+    md.load()
+
+    md_uri = md.metadata['uri']
+
+    is_upload = click.confirm(
+        f"The dataset in the current folder\n"
+        f"{__CWD__}\n"
+        f"will be uploaded to {md_uri}",
+        default=True,
+        show_default=True
+    )
+
+    if not is_upload:
+        click.echo("Upload aborted.")
+    else:
+        click.echo(f"Uploading dataset to {md_uri} ...")
+        if md.metadata.get("source") == "s3":
+            upload_dataset_to_s3(__CWD__, md_uri)
+        elif md.metadata.get("source") == "git":
+            upload_dataset_to_git(__CWD__, md_uri)
+
+
+
+
 
 
 @dataherb.command()
