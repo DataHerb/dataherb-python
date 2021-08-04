@@ -9,6 +9,8 @@ from dataherb.cmd.sync_s3 import upload_dataset_to_s3
 from dataherb.cmd.sync_git import upload_dataset_to_git
 from dataherb.serve.save_mkdocs import SaveMkDocs
 
+from mkdocs.commands.serve import serve as _serve
+
 import click
 import git
 from loguru import logger
@@ -75,10 +77,17 @@ def search(flora, id=None, keywords=None):
 @dataherb.command()
 @click.option("--flora", "-f", default=which_flora)
 @click.option("--workdir", "-w", default=WD, required=True)
-def serve(flora, workdir):
+@click.option("--dev_addr", "-a", metavar='<IP:PORT>')
+def serve(flora, workdir, dev_addr):
     fl = Flora(flora=flora)
     mk = SaveMkDocs(flora=fl, workdir=workdir)
     mk.save_all()
+
+    mkdocs_config = str(Path(WD) / "serve" / "mkdocs.yml")
+
+    _serve(config_file=mkdocs_config, dev_addr=dev_addr)
+
+
 
 
 @dataherb.command()
