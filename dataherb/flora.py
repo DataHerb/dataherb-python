@@ -1,4 +1,6 @@
+from dataherb.parse.model_json import MetaData
 from loguru import logger
+import click
 import json
 from pathlib import Path
 
@@ -21,7 +23,10 @@ class Flora(object):
         """
 
         if isinstance(flora, str):
+            self.flora_config = flora
             flora = self._get_flora(flora)
+        else:
+            raise Exception(f"flora must be a json file or a url. ({flora})")
 
         self.flora = flora
 
@@ -49,6 +54,48 @@ class Flora(object):
         flora = [Herb(herb) for herb in flora]
 
         return flora
+
+    def add(self, herb):
+        """
+        add add a herb to the flora
+        """
+        if isinstance(herb, MetaData):
+            herb = Herb(herb.metadata)
+        elif isinstance(herb, dict):
+            herb = Herb(herb)
+        elif isinstance(herb, Herb):
+            pass
+        else:
+            raise Exception(f"Input herb type ({type(herb)}) is not supported.")
+
+        logger.debug(f"metadata: {herb.metadata}")
+
+        for id in [i.id for i in self.flora]:
+            if id == herb.id:
+                raise Exception(f"herb id = {herb.id} already exists")
+
+        self.flora.append(herb)
+        self.save()
+
+    def save(self, path=None):
+        """save flora metadata to json file"""
+
+        if path is None:
+            path = self.flora_config
+
+        logger.debug(
+            f"type of a herb in flora: {type(self.flora[0])}\n{self.flora[0].metadata}"
+        )
+
+        serialized_flora = []
+        for h in self.flora:
+            logger.debug(f"herb (type {type(h)}): {h}")
+            serialized_flora.append(h.metadata)
+
+        with open(path, "w") as fp:
+            json.dump(
+                serialized_flora, fp, sort_keys=True, indent=4, separators=(',', ': ')
+            )
 
     def search(self, keywords):
         """

@@ -14,6 +14,7 @@ from loguru import logger
 
 from dataherb.flora import Flora
 from dataherb.parse.model_json import STATUS_CODE, MetaData
+from dataherb.core.base import Herb
 
 __CWD__ = os.getcwd()
 
@@ -103,33 +104,51 @@ def download(id, flora):
     "A datapackage.json file will be created right here.\n"
     "Are you sure this is the correct path?"
 )
-def create():
+@click.option("--flora", "-f", default=which_flora)
+def create(flora):
     """
     creates metadata for current dataset
     """
 
+    use_existing_dpkg = False
+
+    if (Path(__CWD__) / "datapackage.json").exists():
+        use_existing_dpkg = click.confirm(
+            f"A datapackage.json file already exists in {__CWD__}. "
+            f"Shall we use the existing datapackage.json?",
+            default=True,
+            show_default=True
+        )
+
+    fl = Flora(flora=flora)
     md = MetaData(folder=__CWD__)
 
-    dataset_basics = describe_dataset()
-    print(dataset_basics)
-    md.metadata.update(dataset_basics)
+    if use_existing_dpkg:
+        logger.debug("Using existing datapackage.json ...")
+        md.load()
+    else:
+        dataset_basics = describe_dataset()
+        print(dataset_basics)
+        md.metadata.update(dataset_basics)
 
-    pkg = Package()
-    pkg.infer("**/*.csv")
-    pkg_descriptor = {"datapackage": pkg.descriptor}
+        pkg = Package()
+        pkg.infer("**/*.csv")
+        pkg_descriptor = {"datapackage": pkg.descriptor}
 
-    md.metadata.update(pkg_descriptor)
+        md.metadata.update(pkg_descriptor)
 
-    # dataset_folder = where_is_dataset(__CWD__)
-    # print(f"Looking into the folder {dataset_folder} for data files...")
+        md.create()
 
-    md.create()
+        click.echo(
+            "The datapackage.json file has been created inside \n"
+            f"{__CWD__}\n"
+            "Please review the datapackage.json file and update other necessary fields."
+        )
 
-    click.echo(
-        "The datapackage.json file has been created inside \n"
-        f"{__CWD__}\n"
-        "Please review the datapackage.json file and update other necessary fields."
-    )
+    hb = Herb(md.metadata)
+    fl.add(hb)
+
+    click.echo(f"Added {hb.metadata['id']} into the flora.")
 
 
 @dataherb.command()
@@ -146,14 +165,14 @@ def upload():
     md = MetaData(folder=__CWD__)
     md.load()
 
-    md_uri = md.metadata['uri']
+    md_uri = md.metadata["uri"]
 
     is_upload = click.confirm(
         f"The dataset in the current folder\n"
         f"{__CWD__}\n"
         f"will be uploaded to {md_uri}",
         default=True,
-        show_default=True
+        show_default=True,
     )
 
     if not is_upload:
@@ -164,10 +183,6 @@ def upload():
             upload_dataset_to_s3(__CWD__, md_uri)
         elif md.metadata.get("source") == "git":
             upload_dataset_to_git(__CWD__, md_uri)
-
-
-
-
 
 
 @dataherb.command()
