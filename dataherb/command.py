@@ -85,7 +85,9 @@ def serve(flora, workdir, dev_addr):
 
     mkdocs_config = str(Path(WD) / "serve" / "mkdocs.yml")
 
+    click.echo("Open http://localhost:8000")
     _serve(config_file=mkdocs_config, dev_addr=dev_addr)
+
 
 
 
