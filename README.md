@@ -139,3 +139,7 @@ We desigined the following workflow to share and index open datasets.
 
 The source of the documentation for this package is located at `docs`.
 
+
+## References and Acknolwedgement
+
+- `dataherb` uses `datapackage` in the core. `datapackage` is a python library for the [data-package standard](https://specs.frictionlessdata.io/data-package/). The core schema of the dataset is essentially the data-package standard.

@@ -1,10 +1,10 @@
 # mkdocs.yml
 site_name: "Dataherb"
 site_author: L Ma
-site_description: "Dataherb is a small dataset management system"
+site_description: "Dataherb is a dataset management system lives in your terminal"
 site_url: "https://dataherb.github.io/dataherb-python"
 repo_url: "https://github.com/dataherb/dataherb-python"
-edit_uri: "blob/main/docs/"
+edit_uri: "blob/master/docs/"
 repo_name: "dataherb/dataherb-python"
 
 
@@ -77,6 +77,14 @@ nav:
     - "Tutorials": tutorials/index.md
   - References:
     - "Introduction": references/index.md
-    - "Commandline":
-      - "Commandline Tool": references/command/index.md
+    - "dataherb.command": references/command.md
+    - "dataherb.flora": "references/flora.md"
+    - "dataherb.core":
+      - "dataherb.core.base": references/core/base.md
+      - "dataherb.core.search": references/core/search.md
+    - "dataherb.parse":
+      - "dataherb.parse.model_json": references/parse/model_json.md
+    - "dataherb.utils":
+      - "dataherb.utils.awscli": references/utils/awscli.md
+      - "dataherb.utils.data": references/utils/data.md
   - "Changelog": changelog.md
