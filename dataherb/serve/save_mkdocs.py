@@ -110,7 +110,6 @@ class SaveMkDocs(SaveModel):
         with open(mkdocs_index_path, "w") as fp:
             fp.write(_index_template)
 
-
     def save_all(self) -> None:
         """
         save_all saves all files necessary

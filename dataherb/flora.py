@@ -23,10 +23,13 @@ class Flora(object):
         """
 
         if isinstance(flora, str):
+            self.workdir = Path(flora).parent.parent
             self.flora_config = flora
             flora = self._get_flora(flora)
         else:
             raise Exception(f"flora must be a json file or a url. ({flora})")
+
+        logger.debug(f"flora workdir {self.workdir}")
 
         self.flora = flora
 
@@ -51,7 +54,10 @@ class Flora(object):
                 flora = flora_request.json()
 
         # Convert herbs to objects
-        flora = [Herb(herb) for herb in flora]
+        flora = [
+            Herb(herb, base_path=self.workdir / f'{herb.get("id", "")}')
+            for herb in flora
+        ]
 
         return flora
 
@@ -139,14 +145,14 @@ class Flora(object):
         """
 
         herbs = _search_by_ids_in_flora(self.flora, id)
-
-        herb_meta = self.herb_meta(id)
+        if len(herbs) > 1:
+            logger.error(
+                f"Found multiple datasets with id {id}, please fix this in your flora data json file, e.g, WORKDIRECTORY/flora/flora.json."
+            )
 
         if herbs:
             herb = herbs[0]
-
             herb = herb.get("herb")
-
             return herb
         else:
             logger.error(f"Could not find herb {id}")
@@ -155,15 +161,23 @@ class Flora(object):
 
 if __name__ == "__main__":
 
-    dataherb = Flora()
-    geo_datasets = _search_by_keywords_in_flora(dataherb.flora, keywords=["geo"])
+    from datapackage import Resource
 
-    print(geo_datasets)
+    fl = Flora(flora="/Users/leima/dataherb/flora/flora.json")
 
-    print(
-        dataherb.herb("geonames_timezone")
-        .leaves.get("dataset/geonames_timezone.csv")
-        .data
-    )
+    hb = fl.herb("git-data-science-job")
+
+    print(f"herb base_path: {hb.base_path}")
+
+    rs = hb.resources[0]
+
+    rs_1 = Resource(rs.descriptor, base_path=str(hb.base_path))
+
+    print(f"{rs.tabular}")
+
+    # rs_2.read()
+
+    rs.read()
+
 
     logger.debug("End of Game")

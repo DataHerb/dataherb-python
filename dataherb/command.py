@@ -77,7 +77,7 @@ def search(flora, id=None, keywords=None):
 @dataherb.command()
 @click.option("--flora", "-f", default=which_flora)
 @click.option("--workdir", "-w", default=WD, required=True)
-@click.option("--dev_addr", "-a", metavar='<IP:PORT>')
+@click.option("--dev_addr", "-a", metavar="<IP:PORT>")
 def serve(flora, workdir, dev_addr):
     fl = Flora(flora=flora)
     mk = SaveMkDocs(flora=fl, workdir=workdir)
@@ -87,9 +87,6 @@ def serve(flora, workdir, dev_addr):
 
     click.echo("Open http://localhost:8000")
     _serve(config_file=mkdocs_config, dev_addr=dev_addr)
-
-
-
 
 
 @dataherb.command()
@@ -112,11 +109,23 @@ def download(id, flora):
         result_id = result_metadata.get("id")
         dest_folder = str(Path(WD) / result_id)
         if os.path.exists(dest_folder):
-            click.echo(f"Can not download dataset to {dest_folder}: folder exists.")
+            click.echo(
+                f"Can not download dataset to {dest_folder}: folder exists.\n"
+            )
+
+            is_pull = click.confirm(f"Would you like to pull from remote?")
+            if is_pull:
+                repo = git.Repo(dest_folder)
+                repo.git.pull()
+            else:
+                click.echo(
+                    f"Please go to the folder {dest_folder} and sync your repo manually."
+                )
         else:
             # dest_folder_parent = f"./{result_repository.split('/')[0]}"
             os.makedirs(dest_folder)
-            git.Git(dest_folder).clone(result_uri)
+            repo = git.repo.base.Repo.clone_from(result_uri, to_path=dest_folder)
+            # git.Git(dest_folder).clone(result_uri)
 
 
 @dataherb.command()

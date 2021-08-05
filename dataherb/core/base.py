@@ -1,16 +1,18 @@
 from loguru import logger
 import click
 import io
-import json
+from pathlib import Path
 from rapidfuzz import fuzz
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.cmd.configs import load_dataherb_config
 
 import pandas as pd
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.utils.data import flatten_dict as _flatten_dict
 
 from dataherb.parse.model_json import MetaData
+from datapackage import Resource, Package
 
 
 class Herb(object):
@@ -18,11 +20,19 @@ class Herb(object):
     Herb is a collection of the dataset.
     """
 
-    def __init__(self, meta_dict):
+    def __init__(self, meta_dict, base_path=None):
         """
         :param herb_meta_json: the dictionary that specifies the herb
         :type herb_meta_json: dict
         """
+        if base_path is None:
+            CONFIG = load_dataherb_config()
+            self.base_path = CONFIG["workdir"]
+        else:
+            self.base_path = base_path
+        if isinstance(self.base_path, str):
+            self.base_path = Path(self.base_path)
+
         if isinstance(meta_dict, dict):
             self.herb_meta_json = meta_dict
         elif isinstance(meta_dict, MetaData):
@@ -37,37 +47,91 @@ class Herb(object):
 
         self._from_meta_dict(self.herb_meta_json)
 
+    @property
+    def is_local(self):
+        is_local = False
+        if self.base_path.exists():
+            is_local = True
+
+        return is_local
+
     def _from_meta_dict(self, meta_dict):
-        self.metadata_uri = meta_dict.get("metadata_uri")
-        self.datapackage = meta_dict.get("datapackage")
-        if not self.datapackage:
-            self.update_datapackage()
+        """Build properties from meta dict"""
         self.name = meta_dict.get("name")
         self.description = meta_dict.get("description")
         self.repository = meta_dict.get("repository")
         self.id = meta_dict.get("id")
+
+        self.source = meta_dict.get("source")
+        self.metadata_uri = meta_dict.get("metadata_uri")
+        self.datapackage = Package(meta_dict.get("datapackage"))
+        if not self.datapackage:
+            self.update_datapackage()
+
+        self.resources = [
+            self.get_resource(i) for i in range(len(self.datapackage.resources))
+        ]
+
+    def get_resource(self, idx):
+        if self.is_local:
+            logger.info(f"Using local dataset for {self.id}, sync it if you need the updated version.")
+            r = self.datapackage.resources[idx]
+            logger.debug(f"using base_path: {str(self.base_path)}")
+            logger.debug(f"using descriptor: {r.descriptor}")
+            resource = Resource(r.descriptor, base_path=str(self.base_path))
+            logger.debug(f"base_path of r_1: {resource._Resource__base_path}")
+        elif (not self.is_local) and (self.source == "git"):
+            logger.debug(f"Using remote data")
+            self.remote_path = f"{self.metadata_uri[:-16]}"
+            r = self.datapackage.resources[idx]
+            resource = Resource(
+                {
+                    **(r.descriptor),
+                    **{"path": self.remote_path + r.descriptor.get("path", "")},
+                }
+            )
+        elif (not self.is_local) and (self.source == "s3"):
+            logger.debug(f"Using remote data")
+            logger.debug(
+                f"Direct resource from S3 is not supported yet. "
+                f"Please sync the dataset to local using the command line first.\n"
+                f"TODO: Sync S3 to local after confirmation from here."
+            )
+            resource = self.datapackage.resources[idx]
+        else:
+            logger.error("Resource is not supported. Currently supporting S3 and git.")
+            resource = self.datapackage.resources[idx]
+
+        return resource
 
     def update_datapackage(self):
         """
         update_datapackage gets the datapackage metadata from the metadata_uri
         """
 
-        file_content = _get_data_from_url(self.metadata_uri)
+        if self.source == "git":
+            file_content = _get_data_from_url(self.metadata_uri)
 
-        if not file_content.status_code == 200:
-            file_error_msg = "Could not fetch remote file: {}; {}".format(
-                self.url, file_content.status_code
+            if not file_content.status_code == 200:
+                file_error_msg = "Could not fetch remote file: {}; {}".format(
+                    self.url, file_content.status_code
+                )
+                click.ClickException(file_error_msg)
+                # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
+            else:
+                file_content = file_content.json()  # .decode(self.decode)
+        elif self.source == "s3":
+            raise NotImplementedError(
+                "Directly get dataherb.json from S3 is not yet implemented."
             )
-            click.ClickException(file_error_msg)
-            # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
-        else:
-            file_content = file_content.json()  # .decode(self.decode)
 
         self.datapackage_meta = file_content
 
         self.herb_meta_json["datapackage"] = self.datapackage_meta
 
-        return self.datapackage_meta
+        self.datapackage = Package(self.datapackage_meta)
+
+        return self.datapackage
 
     def search_score(self, keywords, keys=None):
         """
