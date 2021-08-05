@@ -1,9 +1,12 @@
-import os
+from genericpath import exists
+import json
+import os, sys
 from pathlib import Path
 
 import click
 import git
 from datapackage import Package
+import inquirer
 from loguru import logger
 from mkdocs.commands.serve import serve as _serve
 
@@ -18,16 +21,6 @@ from dataherb.serve.save_mkdocs import SaveMkDocs
 
 __CWD__ = os.getcwd()
 
-CONFIG = load_dataherb_config()
-logger.debug(CONFIG)
-WD = CONFIG["workdir"]
-which_flora = CONFIG.get("default", {}).get("flora")
-if which_flora:
-    which_flora = str(Path(WD) / "flora" / Path(which_flora + ".json"))
-    logger.debug(f"Using flora path: {which_flora}")
-    if not os.path.exists(which_flora):
-        raise Exception(f"flora config {which_flora} does not exist")
-
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -37,6 +30,74 @@ def dataherb(ctx):
         click.echo("Welcome to DataHerb.")
     else:
         click.echo("Loading Service: %s" % ctx.invoked_subcommand)
+
+
+@dataherb.command()
+def configure():
+    """
+    configure dataherb
+    """
+
+    home = Path.home()
+    config_path = home / ".dataherb/config.json"
+
+    if config_path.exists():
+        is_overwite = click.confirm(f"Config file ({config_path}) already exists. Overwrite?", default=False)
+        if is_overwite:
+            click.echo("Overwriting config file...")
+        else:
+            click.echo("Skipping...")
+            sys.exit(0)
+
+    if not config_path.parent.exists():
+        config_path.parent.mkdir(parents=True)
+
+    ###############
+    # Ask questions
+    ###############
+    questions = [
+        inquirer.Path(
+            "workdir",
+            message="Where should I put all the datasets and flora database? An empty folder is recommended.",
+            # path_type=inquirer.Path.DIRECTORY,
+            normalize_to_absolute_path=True
+        ),
+        inquirer.Text(
+            "default_flora",
+            message="How would you name the default flora? Please keep the default value if this is not clear to you.",
+            default="flora"
+        )
+    ]
+
+    answers = inquirer.prompt(questions)
+
+    config = {
+        "workdir": answers.get("workdir"),
+        "default": {
+            "flora": answers.get("default_flora")
+        }
+    }
+
+    logger.debug(f"config: {config}")
+
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=4)
+
+    click.echo(f"The dataherb config has been saved to {config_path}!")
+
+
+
+CONFIG = load_dataherb_config()
+logger.debug(CONFIG)
+WD = CONFIG.get("workdir", ".")
+which_flora = CONFIG.get("default", {}).get("flora")
+if which_flora:
+    which_flora = str(Path(WD) / "flora" / Path(which_flora + ".json"))
+    logger.debug(f"Using flora path: {which_flora}")
+    if not os.path.exists(which_flora):
+        raise Exception(f"flora config {which_flora} does not exist")
+
+
 
 
 @dataherb.command()
@@ -264,6 +325,9 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
+
+
+
 
 
 if __name__ == "__main__":
