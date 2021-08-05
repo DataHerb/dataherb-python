@@ -1,8 +1,7 @@
-from dataherb.parse.model_json import MetaData
-from loguru import logger
-import click
 import json
 from pathlib import Path
+
+from loguru import logger
 
 from dataherb.core.base import Herb
 from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
@@ -10,6 +9,7 @@ from dataherb.core.search import (
     search_by_keywords_in_flora as _search_by_keywords_in_flora,
 )
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.parse.model_json import MetaData
 
 
 class Flora(object):
@@ -179,5 +179,6 @@ if __name__ == "__main__":
 
     rs.read()
 
+    print(hb.get_resource(path="dataset/stackoverflow_job_listing.csv"))
 
     logger.debug("End of Game")

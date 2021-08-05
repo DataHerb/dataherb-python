@@ -1,23 +1,20 @@
-from logging import log
 import os
-import sys
-from dataherb.cmd.create import describe_dataset
-from dataherb.cmd.configs import load_dataherb_config
 from pathlib import Path
-from datapackage import Package
-from dataherb.cmd.sync_s3 import upload_dataset_to_s3
-from dataherb.cmd.sync_git import upload_dataset_to_git
-from dataherb.serve.save_mkdocs import SaveMkDocs
-
-from mkdocs.commands.serve import serve as _serve
 
 import click
 import git
+from datapackage import Package
 from loguru import logger
+from mkdocs.commands.serve import serve as _serve
 
+from dataherb.cmd.configs import load_dataherb_config
+from dataherb.cmd.create import describe_dataset
+from dataherb.cmd.sync_git import upload_dataset_to_git
+from dataherb.cmd.sync_s3 import upload_dataset_to_s3
+from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model_json import STATUS_CODE, MetaData
-from dataherb.core.base import Herb
+from dataherb.serve.save_mkdocs import SaveMkDocs
 
 __CWD__ = os.getcwd()
 
@@ -109,9 +106,7 @@ def download(id, flora):
         result_id = result_metadata.get("id")
         dest_folder = str(Path(WD) / result_id)
         if os.path.exists(dest_folder):
-            click.echo(
-                f"Can not download dataset to {dest_folder}: folder exists.\n"
-            )
+            click.echo(f"Can not download dataset to {dest_folder}: folder exists.\n")
 
             is_pull = click.confirm(f"Would you like to pull from remote?")
             if is_pull:

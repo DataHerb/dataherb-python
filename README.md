@@ -20,6 +20,8 @@
 pip install dataherb
 ```
 
+Documentation: [dataherb.github.io/dataherb-python](https://dataherb.github.io/dataherb-python)
+
 ## The DataHerb Command-Line Tool
 
 > Requires Python 3
@@ -54,11 +56,25 @@ dataherb download covid19_eu_data
 
 We provide a template for dataset creation.
 
-> Before creating a dataset, it is recommended that the user reads [the intro](#Understanding-DataHerb).
+Within a dataset folder where the data files are located, use the following command line tool to create the metadata template.
 
-Use the following command line tool to create the metadata template.
 ```bash
 dataherb create
+```
+
+### Upload dataset to remote
+
+Within the dataset folder, run
+
+```bash
+dataherb upload
+```
+
+### UI for all the datasets in a flora
+
+
+```bash
+dataherb serve
 ```
 
 
@@ -72,20 +88,22 @@ from dataherb.flora import Flora
 
 # Initialize Flora service
 # The Flora service holds all the dataset metadata
-dataherb = Flora()
+use_flora = "path/to/my/flora.json"
+dataherb = Flora(flora=use_flora)
 
 # Search datasets with keyword(s)
 geo_datasets = dataherb.search("geo")
 print(geo_datasets)
 
 # Get a specific file from a dataset and load as DataFrame
-tz_df = dataherb.herb(
-    "geonames_timezone"
-).leaves.get(
-    "dataset/geonames_timezone.csv"
-).data
+tz_df = pd.read_csv(
+  dataherb.herb(
+      "geonames_timezone"
+  ).get_resource(
+      "dataset/geonames_timezone.csv"
+  )
+)
 print(tz_df)
-
 ```
 
 
@@ -94,30 +112,23 @@ print(tz_df)
 
 ### What is DataHerb
 
-DataHerb is an open data initiative to make the access of open datasets easier.
+DataHerb is an open-source data discovery and management tool.
 
 - A **DataHerb** or **Herb** is a dataset. A dataset comes with the data files, and the metadata of the data files.
-- A **DataHerb Leaf** or **Leaf** is a data file in the DataHerb.
+- A **Herb Resource** or **Resource** is a data file in the DataHerb.
 - A **Flora** is the combination of all the DataHerbs.
 
-In many data projects, finding the right datasets to enhance your data is one of the most time consuming part. DataHerb adds flavor to your data project.
+In many data projects, finding the right datasets to enhance your data is one of the most time consuming part. DataHerb adds flavor to your data project. By creating metadata and manage the datasets systematically, locating an dataset is much easier.
+
+Currently, dataherb supports sync dataset between local and S3/git. Each dataset can have its own remote location.
 
 ### What is DataHerb Flora
 
-We desigined the following workflow to share and index datasets.
+We desigined the following workflow to share and index open datasets.
 
 ![DataHerb Workflow](https://raw.githubusercontent.com/DataHerb/dataherb.github.io/master/assets/images/dataherb-components.png)
 
-This repository is being used for listing of datasets (Listings in DataHerb flora repository).
-
-### How to Add Your Dataset
-
-> [A Complete **Tutorals**](https://dataherb.github.io/add/)
-
-Simply create a `yml` file in the `flora` folder to link to your dataset repository. Your dataset repository should have a `.dataherb` folder and a `metadata.yml` file in it.
-
-The indexing part will be done by [GitHub Actions](https://github.com/DataHerb/dataherb-flora/actions).
-
+> The repo [dataherb-flora](https://github.com/DataHerb/dataherb-flora) is a demo flora that lists some datasets and demonstrated on the website [https://dataherb.github.io](https://dataherb.github.io). At this moment, the whole system is being renovated.
 
 ## Development
 
@@ -126,6 +137,5 @@ The indexing part will be done by [GitHub Actions](https://github.com/DataHerb/d
 
 ## Documentation
 
-The documentation for this package is located at `docs`.
+The source of the documentation for this package is located at `docs`.
 
-`HISTORY.rst` is used to list changes of the package.

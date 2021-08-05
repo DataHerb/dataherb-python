@@ -1,18 +1,15 @@
-from loguru import logger
-import click
 import io
 from pathlib import Path
-from rapidfuzz import fuzz
-from dataherb.utils.data import flatten_dict as _flatten_dict
-from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-from dataherb.cmd.configs import load_dataherb_config
 
+import click
 import pandas as pd
+from dataherb.cmd.configs import load_dataherb_config
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
-from dataherb.utils.data import flatten_dict as _flatten_dict
-
 from dataherb.parse.model_json import MetaData
-from datapackage import Resource, Package
+from dataherb.utils.data import flatten_dict as _flatten_dict
+from datapackage import Package, Resource
+from loguru import logger
+from rapidfuzz import fuzz
 
 
 class Herb(object):
@@ -69,12 +66,37 @@ class Herb(object):
             self.update_datapackage()
 
         self.resources = [
-            self.get_resource(i) for i in range(len(self.datapackage.resources))
+            self.get_resource(i, source_only=False)
+            for i in range(len(self.datapackage.resources))
         ]
 
-    def get_resource(self, idx):
+    def get_resource(self, idx=None, path=None, name=None, source_only=True):
+        if idx is None:
+            if path:
+                all_paths = [
+                    r.descriptor.get("path") for r in self.datapackage.resources
+                ]
+                if path in all_paths:
+                    idx = all_paths.index(path)
+                else:
+                    logger.error(f"path = {path} is not in resources.")
+            elif name:
+                all_names = [
+                    r.descriptor.get("name") for r in self.datapackage.resources
+                ]
+                if name in all_names:
+                    idx = all_names.index(name)
+                else:
+                    logger.error(f"name = {name} is not in resources.")
+            else:
+                raise Exception(
+                    f"Please specify at least one of the keywords: idx, path, name."
+                )
+
         if self.is_local:
-            logger.info(f"Using local dataset for {self.id}, sync it if you need the updated version.")
+            logger.info(
+                f"Using local dataset for {self.id}, sync it if you need the updated version."
+            )
             r = self.datapackage.resources[idx]
             logger.debug(f"using base_path: {str(self.base_path)}")
             logger.debug(f"using descriptor: {r.descriptor}")
@@ -102,7 +124,10 @@ class Herb(object):
             logger.error("Resource is not supported. Currently supporting S3 and git.")
             resource = self.datapackage.resources[idx]
 
-        return resource
+        if source_only:
+            return resource.source
+        else:
+            return resource
 
     def update_datapackage(self):
         """
