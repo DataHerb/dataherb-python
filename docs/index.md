@@ -30,6 +30,14 @@ Documentation: [dataherb.github.io/dataherb-python](https://dataherb.github.io/d
 
 The DataHerb cli provides tools to create dataset metadata, validate metadata, search dataset in flora, and download dataset.
 
+### Configure
+
+Before we get started, please configure dataherb first:
+
+```bash
+dataherb configure
+```
+
 ### Search and Download
 
 Search by keyword
