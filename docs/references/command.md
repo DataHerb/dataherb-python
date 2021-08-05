@@ -1,6 +1,6 @@
 ## Command Line Tool
 
-::: dataherb.command
+
 
 !!! warning
     Requires Python 3.
