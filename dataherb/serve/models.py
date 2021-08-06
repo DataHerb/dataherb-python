@@ -1,7 +1,10 @@
 from abc import abstractclassmethod
+import sys
 from loguru import logger
 from dataherb.flora import Flora
 
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 class SourceModel:
     """

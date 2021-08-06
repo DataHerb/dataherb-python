@@ -1,7 +1,10 @@
 from loguru import logger
 import json
+import sys
 from pathlib import Path
 
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 def load_dataherb_config(config_path=None):
     """Loads the dataherb config file.

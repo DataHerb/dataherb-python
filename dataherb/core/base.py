@@ -10,6 +10,10 @@ from dataherb.utils.data import flatten_dict as _flatten_dict
 from datapackage import Package, Resource
 from loguru import logger
 from rapidfuzz import fuzz
+import sys
+
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 class Herb(object):

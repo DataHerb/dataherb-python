@@ -1,14 +1,13 @@
-import json
-import logging
-import os
+from loguru import logger
+import os, sys
 import random
 
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-logging.basicConfig()
-logger = logging.getLogger("fetch")
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 def random_user_agent():
