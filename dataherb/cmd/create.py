@@ -1,10 +1,12 @@
-import os
+import os, sys
 import click
 
 import inquirer
 from dataherb.parse.model_json import IGNORED_FOLDERS_AND_FILES
 from loguru import logger
 
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 def describe_file(file):
     """

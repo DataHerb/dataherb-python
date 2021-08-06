@@ -1,4 +1,3 @@
-from genericpath import exists
 import json
 import os, sys
 from pathlib import Path
@@ -18,6 +17,9 @@ from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model_json import STATUS_CODE, MetaData
 from dataherb.serve.save_mkdocs import SaveMkDocs
+
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 __CWD__ = os.getcwd()
 
@@ -325,6 +327,7 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
+
 
 
 

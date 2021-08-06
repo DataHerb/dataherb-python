@@ -1,5 +1,5 @@
 import json
-import os
+import os, sys
 import click
 from pathlib import Path
 import time
@@ -11,6 +11,9 @@ from dataherb.serve.mkdocs_templates import index_template as _index_template
 
 from loguru import logger
 from slugify import slugify
+
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 class SaveMkDocs(SaveModel):

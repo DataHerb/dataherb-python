@@ -1,15 +1,19 @@
 import json
+import sys
 from pathlib import Path
 
 from loguru import logger
 
 from dataherb.core.base import Herb
-from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
-from dataherb.core.search import (
-    search_by_keywords_in_flora as _search_by_keywords_in_flora,
-)
+from dataherb.core.search import \
+    search_by_ids_in_flora as _search_by_ids_in_flora
+from dataherb.core.search import \
+    search_by_keywords_in_flora as _search_by_keywords_in_flora
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
+
+logger.remove()
+logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 class Flora(object):
