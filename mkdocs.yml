@@ -89,3 +89,7 @@ nav:
       - "dataherb.utils.awscli": references/utils/awscli.md
       - "dataherb.utils.data": references/utils/data.md
   - "Changelog": changelog.md
+
+extra_javascript:
+  - 'https://unpkg.com/mermaid@8.4.6/dist/mermaid.min.js'
+
