@@ -75,6 +75,7 @@ nav:
   - "Home": index.md
   - "Tutorials":
     - "Tutorials": tutorials/index.md
+    - "Configuration": tutorials/configuration/index.md
   - References:
     - "Introduction": references/index.md
     - "dataherb.command": references/command.md
