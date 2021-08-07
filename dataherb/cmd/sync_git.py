@@ -38,13 +38,9 @@ def upload_dataset_to_git(source, target, experimental=False):
             f"Please go to {source} and sync your git repository to {target} manually.\n"
         )
         if is_git_initialized:
-            text += (
-                f"Note: simply add, commit and push."
-            )
+            text += f"Note: simply add, commit and push."
         else:
-            text += (
-                f"Note: git init your repo, commit, add remote {target}, and push."
-            )
+            text += f"Note: git init your repo, commit, add remote {target}, and push."
         click.echo(text)
     else:
         if is_git_initialized:
@@ -53,10 +49,12 @@ def upload_dataset_to_git(source, target, experimental=False):
             repo.index.commit("created datset: added dataherb.json")
 
             if len(repo.remotes) == 0:
-                origin = repo.create_remote('origin', target)
+                origin = repo.create_remote("origin", target)
                 assert origin.exists()
                 origin.fetch()
-                repo.create_head('master', origin.refs.master).set_tracking_branch(origin.refs.master).checkout()
+                repo.create_head("master", origin.refs.master).set_tracking_branch(
+                    origin.refs.master
+                ).checkout()
                 origin.push()
             else:
                 repo.git.push()
@@ -64,9 +62,10 @@ def upload_dataset_to_git(source, target, experimental=False):
             repo = git.Repo.init(source)
             repo.git.add(["*"])
             repo.index.commit("initial commit")
-            origin = repo.create_remote('origin', target)
+            origin = repo.create_remote("origin", target)
             assert origin.exists()
             origin.fetch()
-            repo.create_head('master', origin.refs.master).set_tracking_branch(origin.refs.master).checkout()
+            repo.create_head("master", origin.refs.master).set_tracking_branch(
+                origin.refs.master
+            ).checkout()
             origin.push()
-

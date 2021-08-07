@@ -8,8 +8,8 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 class Config:
-    """Config system for Dataherb
-    """
+    """Config system for Dataherb"""
+
     def __init__(self, config_path=None, no_config_error=False):
 
         self.config_path = config_path
@@ -81,7 +81,9 @@ class Config:
 
     @property
     def flora_path(self):
-        return self._flora_path(self.config.get("default", {}).get("flora"), self.config["workdir"])
+        return self._flora_path(
+            self.config.get("default", {}).get("flora"), self.config["workdir"]
+        )
 
     @property
     def flora(self):

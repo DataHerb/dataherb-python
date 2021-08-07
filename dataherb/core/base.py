@@ -62,11 +62,12 @@ class Herb(object):
         """Build properties from meta dict"""
         self.name = meta_dict.get("name")
         self.description = meta_dict.get("description")
-        self.repository = meta_dict.get("repository")
+        self.repository = meta_dict.get("repository")  # Deprecated
         self.id = meta_dict.get("id")
 
         self.source = meta_dict.get("source")
         self.metadata_uri = meta_dict.get("metadata_uri")
+        self.uri = meta_dict.get("uri")
         self.datapackage = Package(meta_dict.get("datapackage"))
         if not self.datapackage:
             self.update_datapackage()

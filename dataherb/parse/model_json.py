@@ -62,7 +62,6 @@ class MetaData(object):
 
         metadata_file = self.metadata_file
 
-
         if os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
             if not overwrite:
                 logger.error(
@@ -70,7 +69,9 @@ class MetaData(object):
                 )
                 raise SystemExit
             else:
-                logger.debug(f"Will overwrite {os.path.join(dataherb_folder, metadata_file)}")
+                logger.debug(
+                    f"Will overwrite {os.path.join(dataherb_folder, metadata_file)}"
+                )
 
         with open(os.path.join(dataherb_folder, metadata_file), "w") as fp:
             documents = json.dump(self.metadata, fp, indent=4)

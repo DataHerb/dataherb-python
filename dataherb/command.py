@@ -1,16 +1,18 @@
 import json
-import os, sys
+import os
+import sys
 from pathlib import Path
 
 import click
-from rich.console import Console
 import git
-from datapackage import Package
 import inquirer
+from datapackage import Package
 from loguru import logger
 from mkdocs.commands.serve import serve as _serve
+from rich.console import Console
 
 from dataherb.cmd.create import describe_dataset
+from dataherb.cmd.search import HerbTable
 from dataherb.cmd.sync_git import upload_dataset_to_git
 from dataherb.cmd.sync_s3 import upload_dataset_to_s3
 from dataherb.core.base import Herb
@@ -39,8 +41,15 @@ def dataherb(ctx):
 
 
 @dataherb.command()
-@click.option('--show/--no-show', '-s/ ', default=False, help="Show the current configuration")
-@click.option('--locate/--no-locate', '-l/ ', default=False, help="Locate the folder that contains the configuration")
+@click.option(
+    "--show/--no-show", "-s/ ", default=False, help="Show the current configuration"
+)
+@click.option(
+    "--locate/--no-locate",
+    "-l/ ",
+    default=False,
+    help="Locate the folder that contains the configuration",
+)
 def configure(show, locate):
     """
     Configure dataherb; inspect, or lcoate the current configurations.
@@ -95,28 +104,35 @@ def configure(show, locate):
         with open(config_path, "w") as f:
             json.dump(config, f, indent=4)
 
-        click.secho(
-            f"The dataherb config has been saved to {config_path}!", fg="green"
-        )
+        click.secho(f"The dataherb config has been saved to {config_path}!", fg="green")
     else:
         if not config_path.exists():
             click.secho(f"Config file ({config_path}) doesn't exist.", fg="red")
         else:
             c = Config()
             click.secho(f"The current config for dataherb is:")
-            click.secho(json.dumps(c.config, indent=2, sort_keys=True, ensure_ascii=False))
+            click.secho(
+                json.dumps(c.config, indent=2, sort_keys=True, ensure_ascii=False)
+            )
             click.secho(f"The above config is extracted from {config_path}")
 
     if locate:
         click.launch(str(config_path.parent))
 
 
-
 @dataherb.command()
-@click.argument("keywords", required=False)
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Path to the flora file; Defaults to the default flora in the configuration.",
+)
 @click.option("--id", "-i", required=False, help="The id of the dataset to describe.")
-@click.option("--flora", "-f", default=None, help="Path to the flora file; Defaults to the default flora in the configuration.")
-def search(flora, id=None, keywords=None):
+@click.argument("keywords", required=False)
+@click.option(
+    "--full/--summary", default=False, help="Whether to show the full json result"
+)
+def search(flora, id, keywords, full):
     """
     search datasets on DataHerb by keywords or id
     """
@@ -124,7 +140,6 @@ def search(flora, id=None, keywords=None):
         c = Config()
         flora = c.flora_path
 
-    SHOW_KEYS = ["name", "description", "contributors"]
     fl = Flora(flora=flora)
     if not id:
         click.echo("Searching Herbs in DataHerb Flora ...")
@@ -134,9 +149,17 @@ def search(flora, id=None, keywords=None):
             click.echo(f"Could not find dataset related to {keywords}")
         else:
             for result in results:
+                result_herb = result.get("herb")
                 result_metadata = result.get("herb").metadata
-                click.echo(f'DataHerb ID: {result_metadata.get("id")}')
-                click.echo(result_metadata)
+                if not full:
+                    ht = HerbTable(result_herb)
+                    console.rule(title=f"{result_herb.id}", characters="||")
+                    console.print(ht.table())
+                    console.print(ht.resource_tree())
+                else:
+                    console.rule(title=f"{result_herb.id}", characters="||")
+                    click.secho(f"DataHerb ID: {result_herb.id}")
+                    click.echo(json.dumps(result_metadata, indent=2, sort_keys=True))
     else:
         click.echo(f"Fetching Herbs {id} in DataHerb Flora ...")
         result = fl.herb(id)
@@ -144,15 +167,45 @@ def search(flora, id=None, keywords=None):
             click.echo(f"Could not find dataset with id {id}")
         else:
             result_metadata = result.metadata
-            click.echo(f'DataHerb ID: {result_metadata.get("id")}')
-            click.echo(result_metadata)
+
+            if not full:
+                ht = HerbTable(result)
+                console.rule(title=f"{result.id}", characters="||")
+                console.print(ht.table())
+                console.print(ht.resource_tree())
+            else:
+                console.rule(title=f"{result.id}", characters="||")
+                click.secho(f"DataHerb ID: {result.id}")
+                click.echo(json.dumps(result_metadata, indent=2, sort_keys=True))
 
 
 @dataherb.command()
-@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
-@click.option("--workdir", "-w", default=None, help="Specify the path to the work directory; defaults to the workdir in configuration.")
-@click.option("--dev_addr", "-a", default="localhost:52125", metavar="<IP:PORT>", help="Specify the address of the dev server; defaults to localhost:52125")
-@click.option("--recreate", "-r", default=False, required=False, help="Whether to recreate the website. Recreation will delete all the current generated pages and rebuild the whole website.")
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Specify the path to the flora; defaults to default flora in configuration.",
+)
+@click.option(
+    "--workdir",
+    "-w",
+    default=None,
+    help="Specify the path to the work directory; defaults to the workdir in configuration.",
+)
+@click.option(
+    "--dev_addr",
+    "-a",
+    default="localhost:52125",
+    metavar="<IP:PORT>",
+    help="Specify the address of the dev server; defaults to localhost:52125",
+)
+@click.option(
+    "--recreate",
+    "-r",
+    default=False,
+    required=False,
+    help="Whether to recreate the website. Recreation will delete all the current generated pages and rebuild the whole website.",
+)
 def serve(flora, workdir, dev_addr, recreate):
     """
     create a dataherb server and view the flora in your browser
@@ -179,8 +232,18 @@ def serve(flora, workdir, dev_addr, recreate):
 
 @dataherb.command()
 @click.argument("id", required=True)
-@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
-@click.option("--workdir", "-w", default=None, help="Specify the path to the work directory; defaults to the workdir in configuration.")
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Specify the path to the flora; defaults to default flora in configuration.",
+)
+@click.option(
+    "--workdir",
+    "-w",
+    default=None,
+    help="Specify the path to the work directory; defaults to the workdir in configuration.",
+)
 def download(id, flora, workdir):
     """
     Download dataset using id
@@ -229,7 +292,12 @@ def download(id, flora, workdir):
     "A dataherb.json file will be created right here.\n"
     "Are you sure this is the correct path?"
 )
-@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Specify the path to the flora; defaults to default flora in configuration.",
+)
 def create(flora):
     """
     creates metadata for current dataset
@@ -266,7 +334,9 @@ def create(flora):
         md.metadata.update(pkg_descriptor)
 
         if (Path(__CWD__) / "dataherb.json").exists():
-            is_overwrite = click.confirm("Replace the current dataherb.json file?", default=False)
+            is_overwrite = click.confirm(
+                "Replace the current dataherb.json file?", default=False
+            )
             if is_overwrite:
                 md.create(overwrite=is_overwrite)
 
@@ -292,7 +362,12 @@ def create(flora):
 
 
 @dataherb.command()
-@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Specify the path to the flora; defaults to default flora in configuration.",
+)
 @click.argument("herb_id", required=True)
 def remove(flora, herb_id):
     """

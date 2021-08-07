@@ -48,6 +48,3 @@ def load_dataherb_config(config_path=None, no_config_error=True):
         conf = {}
 
     return conf
-
-
-
