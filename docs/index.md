@@ -8,13 +8,14 @@
   <br>
 </h1>
 
-<h4 align="center">A <a href="https://dataherb.github.io" target="_blank">DataHerb</a> Core Service to Create and Load Datasets.</h4>
+<h4 align="center">A <a href="https://dataherb.github.io" target="_blank">DataHerb</a> Core Service to Create and Load Datasets. Homebrew for datasets.</h4>
 
 <p align="center">
 
 </p>
 
 
+`dataherb` is the homebrew (or snap if you are using linux) for datasets.
 
 ## Install
 
