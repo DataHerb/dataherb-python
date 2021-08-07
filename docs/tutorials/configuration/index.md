@@ -29,6 +29,35 @@ and some questions will show up:
     You could overwrite it or leave it be.
 
 
+### Show Current Configuration
+
+To inspect the current configuration, use the option `-s` (or `--show`).
+
+```bash
+dataherb configure -s
+```
+
+We will get something similar to the following.
+
+```bash
+The current config for dataherb is:
+{
+  "default": {
+    "flora": "flora"
+  },
+  "workdir": "/Users/itsme/dataherb"
+}
+The above config is extracted from ~/.dataherb/config.json
+```
+
+### Locate the Configuration File
+
+The option `-l` (or `--locate`) opens the folder that contains the configuration file `config.json`.
+
+```bash
+dataherb configure -l
+```
+
 
 ### Manually Create Configuration
 
