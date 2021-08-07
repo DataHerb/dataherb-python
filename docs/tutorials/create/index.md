@@ -225,3 +225,17 @@ Two things happened after this.
         }
     }
     ```
+
+
+
+### Sync to Remote
+
+
+!!! warning "WIP"
+    Sync local dataset to remote is still a WIP.
+
+
+After creating the dataset, run the command `dataherb upload`.
+
+!!! warning "Using Experimental Feature"
+    Use `dataherb upload --experimental True` to use experimental feature. For example, git repo will automatically add, commit ,and push.

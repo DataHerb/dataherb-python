@@ -141,7 +141,7 @@ def search(flora, id=None, keywords=None):
 @dataherb.command()
 @click.option("--flora", "-f", default=which_flora)
 @click.option("--workdir", "-w", default=WD, required=True)
-@click.option("--dev_addr", "-a", metavar="<IP:PORT>")
+@click.option("--dev_addr", "-a", default="localhost:52125", metavar="<IP:PORT>")
 @click.option("--recreate", "-r", default=False, required=False)
 def serve(flora, workdir, dev_addr, recreate):
     fl = Flora(flora=flora)
@@ -150,8 +150,8 @@ def serve(flora, workdir, dev_addr, recreate):
 
     mkdocs_config = str(Path(workdir) / "serve" / "mkdocs.yml")
 
-    click.echo("Open http://localhost:8000")
-    click.launch("http://localhost:8000")
+    click.echo(f"Open http://{dev_addr}")
+    click.launch(f"http://{dev_addr}")
     _serve(config_file=mkdocs_config, dev_addr=dev_addr)
 
 

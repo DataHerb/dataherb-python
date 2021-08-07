@@ -77,6 +77,9 @@ nav:
     - "Tutorials": tutorials/index.md
     - "Configuration": tutorials/configuration/index.md
     - "Create Dataset": tutorials/create/index.md
+    - "Search Dataset": tutorials/search/index.md
+    - "Download Dataset": tutorials/download/index.md
+    - "Serve Flora": tutorials/serve/index.md
   - References:
     - "Introduction": references/index.md
     - "dataherb.command": references/command.md
