@@ -3,13 +3,13 @@ import os, sys
 from pathlib import Path
 
 import click
+from rich.console import Console
 import git
 from datapackage import Package
 import inquirer
 from loguru import logger
 from mkdocs.commands.serve import serve as _serve
 
-from dataherb.cmd.configs import load_dataherb_config
 from dataherb.cmd.create import describe_dataset
 from dataherb.cmd.sync_git import upload_dataset_to_git
 from dataherb.cmd.sync_s3 import upload_dataset_to_s3
@@ -17,9 +17,12 @@ from dataherb.core.base import Herb
 from dataherb.flora import Flora
 from dataherb.parse.model_json import STATUS_CODE, MetaData
 from dataherb.serve.save_mkdocs import SaveMkDocs
+from dataherb.utils.configs import Config
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
+console = Console()
+
 
 __CWD__ = os.getcwd()
 
@@ -31,89 +34,96 @@ def dataherb(ctx):
         click.echo("Hello {}".format(os.environ.get("USER", "")))
         click.echo("Welcome to DataHerb.")
     else:
-        click.echo("Loading Service: %s" % ctx.invoked_subcommand)
+        # click.echo("Loading Service: %s" % ctx.invoked_subcommand)
+        pass
 
 
 @dataherb.command()
-def configure():
+@click.option('--show/--no-show', '-s/ ', default=False, help="Show the current configuration")
+@click.option('--locate/--no-locate', '-l/ ', default=False, help="Locate the folder that contains the configuration")
+def configure(show, locate):
     """
-    configure dataherb
+    Configure dataherb; inspect, or lcoate the current configurations.
     """
 
     home = Path.home()
-    config_path = home / ".dataherb/config.json"
+    config_path = home / ".dataherb" / "config.json"
 
-    if config_path.exists():
-        is_overwite = click.confirm(
-            click.style(
-                f"Config file ({config_path}) already exists. Overwrite?", fg="red"
+    if not show:
+        if config_path.exists():
+            is_overwite = click.confirm(
+                click.style(
+                    f"Config file ({config_path}) already exists. Overwrite?", fg="red"
+                ),
+                default=False,
+            )
+            if is_overwite:
+                click.echo(click.style("Overwriting config file...", fg="red"))
+            else:
+                click.echo("Skipping...")
+                sys.exit(0)
+
+        if not config_path.parent.exists():
+            config_path.parent.mkdir(parents=True)
+
+        ###############
+        # Ask questions
+        ###############
+        questions = [
+            inquirer.Path(
+                "workdir",
+                message="Where should I put all the datasets and flora database? An empty folder is recommended.",
+                # path_type=inquirer.Path.DIRECTORY,
+                normalize_to_absolute_path=True,
             ),
-            default=False,
+            inquirer.Text(
+                "default_flora",
+                message="How would you name the default flora? Please keep the default value if this is not clear to you.",
+                default="flora",
+            ),
+        ]
+
+        answers = inquirer.prompt(questions)
+
+        config = {
+            "workdir": answers.get("workdir"),
+            "default": {"flora": answers.get("default_flora")},
+        }
+
+        logger.debug(f"config: {config}")
+
+        with open(config_path, "w") as f:
+            json.dump(config, f, indent=4)
+
+        click.secho(
+            f"The dataherb config has been saved to {config_path}!", fg="green"
         )
-        if is_overwite:
-            click.echo(click.style("Overwriting config file...", fg="red"))
+    else:
+        if not config_path.exists():
+            click.secho(f"Config file ({config_path}) doesn't exist.", fg="red")
         else:
-            click.echo("Skipping...")
-            sys.exit(0)
+            c = Config()
+            click.secho(f"The current config for dataherb is:")
+            click.secho(json.dumps(c.config, indent=2, sort_keys=True, ensure_ascii=False))
+            click.secho(f"The above config is extracted from {config_path}")
 
-    if not config_path.parent.exists():
-        config_path.parent.mkdir(parents=True)
+    if locate:
+        click.launch(str(config_path.parent))
 
-    ###############
-    # Ask questions
-    ###############
-    questions = [
-        inquirer.Path(
-            "workdir",
-            message="Where should I put all the datasets and flora database? An empty folder is recommended.",
-            # path_type=inquirer.Path.DIRECTORY,
-            normalize_to_absolute_path=True,
-        ),
-        inquirer.Text(
-            "default_flora",
-            message="How would you name the default flora? Please keep the default value if this is not clear to you.",
-            default="flora",
-        ),
-    ]
-
-    answers = inquirer.prompt(questions)
-
-    config = {
-        "workdir": answers.get("workdir"),
-        "default": {"flora": answers.get("default_flora")},
-    }
-
-    logger.debug(f"config: {config}")
-
-    with open(config_path, "w") as f:
-        json.dump(config, f, indent=4)
-
-    click.echo(
-        click.style(f"The dataherb config has been saved to {config_path}!", fg="green")
-    )
-
-
-CONFIG = load_dataherb_config(no_config_error=False)
-logger.debug(CONFIG)
-if not CONFIG:
-    click.echo("No config file found. Please run 'dataherb configure' to create one.")
-WD = CONFIG.get("workdir", ".")
-which_flora = CONFIG.get("default", {}).get("flora")
-if which_flora:
-    which_flora = str(Path(WD) / "flora" / Path(which_flora + ".json"))
-    logger.debug(f"Using flora path: {which_flora}")
-    if not os.path.exists(which_flora):
-        raise Exception(f"flora config {which_flora} does not exist")
 
 
 @dataherb.command()
 @click.argument("keywords", required=False)
-@click.option("--id", "-i", required=False)
-@click.option("--flora", "-f", default=which_flora)
+@click.option("--id", "-i", required=False, help="The id of the dataset to describe.")
+@click.option("--flora", "-f", default=None, help="Path to the flora file; Defaults to the default flora in the configuration.")
 def search(flora, id=None, keywords=None):
     """
     search datasets on DataHerb by keywords or id
     """
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
+
     SHOW_KEYS = ["name", "description", "contributors"]
     fl = Flora(flora=flora)
     if not id:
@@ -139,11 +149,23 @@ def search(flora, id=None, keywords=None):
 
 
 @dataherb.command()
-@click.option("--flora", "-f", default=which_flora)
-@click.option("--workdir", "-w", default=WD, required=True)
-@click.option("--dev_addr", "-a", default="localhost:52125", metavar="<IP:PORT>")
-@click.option("--recreate", "-r", default=False, required=False)
+@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
+@click.option("--workdir", "-w", default=None, help="Specify the path to the work directory; defaults to the workdir in configuration.")
+@click.option("--dev_addr", "-a", default="localhost:52125", metavar="<IP:PORT>", help="Specify the address of the dev server; defaults to localhost:52125")
+@click.option("--recreate", "-r", default=False, required=False, help="Whether to recreate the website. Recreation will delete all the current generated pages and rebuild the whole website.")
 def serve(flora, workdir, dev_addr, recreate):
+    """
+    create a dataherb server and view the flora in your browser
+    """
+
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
+
+    if workdir is None:
+        c = Config()
+        workdir = c.workdir
+
     fl = Flora(flora=flora)
     mk = SaveMkDocs(flora=fl, workdir=workdir)
     mk.save_all(recreate=recreate)
@@ -157,12 +179,20 @@ def serve(flora, workdir, dev_addr, recreate):
 
 @dataherb.command()
 @click.argument("id", required=True)
-@click.option("--flora", "-f", default=which_flora)
-@click.option("--workdir", "-w", default=WD, required=True)
+@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
+@click.option("--workdir", "-w", default=None, help="Specify the path to the work directory; defaults to the workdir in configuration.")
 def download(id, flora, workdir):
     """
-    download dataset using id
+    Download dataset using id
     """
+
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
+
+    if workdir is None:
+        c = Config()
+        workdir = c.workdir
 
     fl = Flora(flora=flora)
     click.echo(f"Fetching Herbs {id} in DataHerb Flora ...")
@@ -199,11 +229,14 @@ def download(id, flora, workdir):
     "A dataherb.json file will be created right here.\n"
     "Are you sure this is the correct path?"
 )
-@click.option("--flora", "-f", default=which_flora)
+@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
 def create(flora):
     """
     creates metadata for current dataset
     """
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
 
     use_existing_dpkg = False
 
@@ -259,12 +292,15 @@ def create(flora):
 
 
 @dataherb.command()
-@click.option("--flora", "-f", default=which_flora)
+@click.option("--flora", "-f", default=None, help="Specify the path to the flora; defaults to default flora in configuration.")
 @click.argument("herb_id", required=True)
 def remove(flora, herb_id):
     """
     remove herb from flora
     """
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
 
     fl = Flora(flora=flora)
     herb = fl.herb(herb_id)
@@ -287,7 +323,7 @@ def remove(flora, herb_id):
     "All contents in this folder will be uploaded.\n"
     "Are you sure this is the correct path?"
 )
-@click.option("--experimental", "-e", default=False)
+@click.option("--experimental", "-e", default=False, help="Use experimental features")
 def upload(experimental):
     """
     upload dataset in the current folder to the remote destination
@@ -320,7 +356,7 @@ def upload(experimental):
 @click.option("-v", "--verbose", type=str, default="warning")
 def validate(verbose):
     """
-    validates the existing metadata for current dataset
+    WIP: validates the existing metadata for current dataset
     """
 
     click.secho(

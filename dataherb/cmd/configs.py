@@ -8,7 +8,8 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
 def load_dataherb_config(config_path=None, no_config_error=True):
-    """Loads the dataherb config file.
+    """[Deprecated]
+    Loads the dataherb config file.
 
     Load the content from the specified file as the config. The config file has to be json.
     """
@@ -47,3 +48,6 @@ def load_dataherb_config(config_path=None, no_config_error=True):
         conf = {}
 
     return conf
+
+
+

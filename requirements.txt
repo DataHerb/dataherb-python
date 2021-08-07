@@ -13,3 +13,4 @@ docutils<0.16,>=0.10
 mkdocs-material==7.1.8
 python-slugify==5.0.2
 mkdocs-macros-plugin==0.5.12
+rich>=10.7.0
