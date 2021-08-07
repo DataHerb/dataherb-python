@@ -287,7 +287,8 @@ def remove(flora, herb_id):
     "All contents in this folder will be uploaded.\n"
     "Are you sure this is the correct path?"
 )
-def upload():
+@click.option("--experimental", "-e", default=False)
+def upload(experimental):
     """
     upload dataset in the current folder to the remote destination
     """
@@ -312,7 +313,7 @@ def upload():
         if md.metadata.get("source") == "s3":
             upload_dataset_to_s3(__CWD__, md_uri)
         elif md.metadata.get("source") == "git":
-            upload_dataset_to_git(__CWD__, md_uri)
+            upload_dataset_to_git(__CWD__, md_uri, experimental=experimental)
 
 
 @dataherb.command()
