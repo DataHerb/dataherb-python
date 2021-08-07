@@ -1,4 +1,5 @@
 import json
+from distutils.dir_util import copy_tree
 import os, sys
 import click
 from pathlib import Path
@@ -97,7 +98,17 @@ class SaveMkDocs(SaveModel):
 
         logger.info(f"Saved {herb_metadata} to {path}")
 
+    def create_mkdocs_theme(self):
+        """copies the prepared theme to the serve dir"""
+
+        mkdocs_folder = Path(self.workdir) / "serve"
+
+        mkdocs_template_path = Path(__file__).parent / "mkdocs_template"
+
+        copy_tree(str(mkdocs_template_path), str(mkdocs_folder))
+
     def create_mkdocs_yaml(self):
+        """creates mkdocs.yaml from mkdocs_templates.py"""
 
         mkdocs_folder = Path(self.workdir) / "serve"
         mkdocs_yaml_path = mkdocs_folder / "mkdocs.yml"
@@ -106,6 +117,7 @@ class SaveMkDocs(SaveModel):
             fp.write(_site_config)
 
     def create_mkdocs_index(self):
+        """creates herbs/index.md from mkdocs_templates.py"""
 
         mkdocs_folder = Path(self.workdir) / "serve"
         mkdocs_index_path = mkdocs_folder / "herbs" / "index.md"
@@ -113,7 +125,7 @@ class SaveMkDocs(SaveModel):
         with open(mkdocs_index_path, "w") as fp:
             fp.write(_index_template)
 
-    def save_all(self) -> None:
+    def save_all(self, recreate=False) -> None:
         """
         save_all saves all files necessary
         """
@@ -123,11 +135,15 @@ class SaveMkDocs(SaveModel):
 
         # create folders if necessary
         if md_folder.exists():
-            is_remove = click.confirm(
-                f"{md_folder} exists, remove it and create new?",
-                default=True,
-                show_default=True,
-            )
+            if not recreate:
+                is_remove = click.confirm(
+                    f"{md_folder} exists, remove it and create new?",
+                    default=True,
+                    show_default=True,
+                )
+            else:
+                is_remove = True
+
             if is_remove:
                 cache_folder = md_folder.parent / "cache"
                 if cache_folder.exists():
@@ -146,8 +162,7 @@ class SaveMkDocs(SaveModel):
             # generate markdown files
             self.save_one_markdown(herb, herb_md_path)
 
-        self.create_mkdocs_yaml()
-        self.create_mkdocs_index()
+        self.create_mkdocs_theme()
 
 
 if __name__ == "__main__":

@@ -6,7 +6,8 @@ from pathlib import Path
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
 
-def load_dataherb_config(config_path=None):
+
+def load_dataherb_config(config_path=None, no_config_error=True):
     """Loads the dataherb config file.
 
     Load the content from the specified file as the config. The config file has to be json.
@@ -17,10 +18,14 @@ def load_dataherb_config(config_path=None):
         config_path = home / ".dataherb/config.json"
 
     if not config_path.exists():
-        logger.error(
-            f"Config file {config_path} does not exist.\n"
-            f"If this is the first time you use dataherb, please run `dataherb configure` to config dataherb."
-        )
+        if no_config_error:
+            logger.error(
+                f"Config file {config_path} does not exist.\n"
+                f"If this is the first time you use dataherb, please run `dataherb configure` to config dataherb."
+            )
+        else:
+            pass
+        return {}
 
     logger.debug(f"Using {config_path} as config file for dataherb")
     try:

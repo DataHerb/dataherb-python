@@ -5,10 +5,10 @@ from pathlib import Path
 from loguru import logger
 
 from dataherb.core.base import Herb
-from dataherb.core.search import \
-    search_by_ids_in_flora as _search_by_ids_in_flora
-from dataherb.core.search import \
-    search_by_keywords_in_flora as _search_by_keywords_in_flora
+from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
+from dataherb.core.search import (
+    search_by_keywords_in_flora as _search_by_keywords_in_flora,
+)
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
 
@@ -85,6 +85,19 @@ class Flora(object):
                 raise Exception(f"herb id = {herb.id} already exists")
 
         self.flora.append(herb)
+        self.save()
+
+    def remove(self, herb_id):
+        """
+        add add a herb to the flora
+        """
+
+        for id in [i.id for i in self.flora]:
+            if id == herb_id:
+                logger.debug(f"found herb id = {herb_id}")
+
+        self.flora = [h for h in self.flora if h.id != herb_id]
+
         self.save()
 
     def save(self, path=None):

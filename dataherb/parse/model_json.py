@@ -46,7 +46,7 @@ class MetaData(object):
 
         logger.debug(f"Loaded metadata: {self.metadata}")
 
-    def create(self):
+    def create(self, overwrite=False):
         """creates dataherb.json file"""
         # create .dataherb folder
         dataherb_folder = self.dataherb_folder
@@ -62,11 +62,15 @@ class MetaData(object):
 
         metadata_file = self.metadata_file
 
+
         if os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
-            logger.error(
-                f"File {os.path.join(dataherb_folder, metadata_file)} already exists!"
-            )
-            raise SystemExit
+            if not overwrite:
+                logger.error(
+                    f"File {os.path.join(dataherb_folder, metadata_file)} already exists!"
+                )
+                raise SystemExit
+            else:
+                logger.debug(f"Will overwrite {os.path.join(dataherb_folder, metadata_file)}")
 
         with open(os.path.join(dataherb_folder, metadata_file), "w") as fp:
             documents = json.dump(self.metadata, fp, indent=4)
