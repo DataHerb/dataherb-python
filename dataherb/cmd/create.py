@@ -8,6 +8,7 @@ from loguru import logger
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
 
+
 def describe_file(file):
     """
     describe_file [summary]
@@ -89,6 +90,7 @@ def describe_dataset():
     meta = {
         "source": answers.get("source"),
         "name": answers.get("name", ""),
+        "id": answers["id"],
         "description": answers.get("description", ""),
         "uri": answers.get("uri", ""),
         "metadata_uri": metadata_uri,

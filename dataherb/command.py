@@ -44,9 +44,14 @@ def configure():
     config_path = home / ".dataherb/config.json"
 
     if config_path.exists():
-        is_overwite = click.confirm(f"Config file ({config_path}) already exists. Overwrite?", default=False)
+        is_overwite = click.confirm(
+            click.style(
+                f"Config file ({config_path}) already exists. Overwrite?", fg="red"
+            ),
+            default=False,
+        )
         if is_overwite:
-            click.echo("Overwriting config file...")
+            click.echo(click.style("Overwriting config file...", fg="red"))
         else:
             click.echo("Skipping...")
             sys.exit(0)
@@ -62,22 +67,20 @@ def configure():
             "workdir",
             message="Where should I put all the datasets and flora database? An empty folder is recommended.",
             # path_type=inquirer.Path.DIRECTORY,
-            normalize_to_absolute_path=True
+            normalize_to_absolute_path=True,
         ),
         inquirer.Text(
             "default_flora",
             message="How would you name the default flora? Please keep the default value if this is not clear to you.",
-            default="flora"
-        )
+            default="flora",
+        ),
     ]
 
     answers = inquirer.prompt(questions)
 
     config = {
         "workdir": answers.get("workdir"),
-        "default": {
-            "flora": answers.get("default_flora")
-        }
+        "default": {"flora": answers.get("default_flora")},
     }
 
     logger.debug(f"config: {config}")
@@ -85,12 +88,15 @@ def configure():
     with open(config_path, "w") as f:
         json.dump(config, f, indent=4)
 
-    click.echo(f"The dataherb config has been saved to {config_path}!")
+    click.echo(
+        click.style(f"The dataherb config has been saved to {config_path}!", fg="green")
+    )
 
 
-
-CONFIG = load_dataherb_config()
+CONFIG = load_dataherb_config(no_config_error=False)
 logger.debug(CONFIG)
+if not CONFIG:
+    click.echo("No config file found. Please run 'dataherb configure' to create one.")
 WD = CONFIG.get("workdir", ".")
 which_flora = CONFIG.get("default", {}).get("flora")
 if which_flora:
@@ -98,8 +104,6 @@ if which_flora:
     logger.debug(f"Using flora path: {which_flora}")
     if not os.path.exists(which_flora):
         raise Exception(f"flora config {which_flora} does not exist")
-
-
 
 
 @dataherb.command()
@@ -138,21 +142,24 @@ def search(flora, id=None, keywords=None):
 @click.option("--flora", "-f", default=which_flora)
 @click.option("--workdir", "-w", default=WD, required=True)
 @click.option("--dev_addr", "-a", metavar="<IP:PORT>")
-def serve(flora, workdir, dev_addr):
+@click.option("--recreate", "-r", default=False, required=False)
+def serve(flora, workdir, dev_addr, recreate):
     fl = Flora(flora=flora)
     mk = SaveMkDocs(flora=fl, workdir=workdir)
-    mk.save_all()
+    mk.save_all(recreate=recreate)
 
-    mkdocs_config = str(Path(WD) / "serve" / "mkdocs.yml")
+    mkdocs_config = str(Path(workdir) / "serve" / "mkdocs.yml")
 
     click.echo("Open http://localhost:8000")
+    click.launch("http://localhost:8000")
     _serve(config_file=mkdocs_config, dev_addr=dev_addr)
 
 
 @dataherb.command()
 @click.argument("id", required=True)
 @click.option("--flora", "-f", default=which_flora)
-def download(id, flora):
+@click.option("--workdir", "-w", default=WD, required=True)
+def download(id, flora, workdir):
     """
     download dataset using id
     """
@@ -167,7 +174,7 @@ def download(id, flora):
         click.echo(f'Downloading DataHerb ID: {result_metadata.get("id")}')
         result_uri = result_metadata.get("uri")
         result_id = result_metadata.get("id")
-        dest_folder = str(Path(WD) / result_id)
+        dest_folder = str(Path(workdir) / result_id)
         if os.path.exists(dest_folder):
             click.echo(f"Can not download dataset to {dest_folder}: folder exists.\n")
 
@@ -225,18 +232,53 @@ def create(flora):
 
         md.metadata.update(pkg_descriptor)
 
-        md.create()
+        if (Path(__CWD__) / "dataherb.json").exists():
+            is_overwrite = click.confirm("Replace the current dataherb.json file?", default=False)
+            if is_overwrite:
+                md.create(overwrite=is_overwrite)
 
-        click.echo(
-            "The dataherb.json file has been created inside \n"
-            f"{__CWD__}\n"
-            "Please review the dataherb.json file and update other necessary fields."
-        )
+                click.echo(
+                    f"The dataherb.json file in folder {__CWD__} has been replaced. \n"
+                    "Please review the dataherb.json file and update other necessary fields."
+                )
+            else:
+                click.echo("We did nothing.")
+                sys.exit()
+        else:
+            md.create()
+            click.echo(
+                "The dataherb.json file has been created inside \n"
+                f"{__CWD__}\n"
+                "Please review the dataherb.json file and update other necessary fields."
+            )
 
-    hb = Herb(md.metadata)
+    hb = Herb(md.metadata, with_resources=False)
     fl.add(hb)
 
-    click.echo(f"Added {hb.metadata['id']} into the flora.")
+    click.echo(f"Added {hb.id} into the flora.")
+
+
+@dataherb.command()
+@click.option("--flora", "-f", default=which_flora)
+@click.argument("herb_id", required=True)
+def remove(flora, herb_id):
+    """
+    remove herb from flora
+    """
+
+    fl = Flora(flora=flora)
+    herb = fl.herb(herb_id)
+    if not herb:
+        click.echo(click.style(f"Could not find herb with id {herb_id}", fg="red"))
+        click.echo("We did nothing.")
+        sys.exit()
+
+    to_remove = click.confirm(f"Remove {herb_id} from the flora?", default=False)
+    if to_remove:
+        fl.remove(herb_id)
+        click.echo(f"Removed {herb_id} into the flora.")
+    else:
+        click.echo("We did nothing.")
 
 
 @dataherb.command()
@@ -327,10 +369,6 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
-
-
-
-
 
 
 if __name__ == "__main__":

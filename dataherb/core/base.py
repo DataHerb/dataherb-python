@@ -21,7 +21,7 @@ class Herb(object):
     Herb is a collection of the dataset.
     """
 
-    def __init__(self, meta_dict, base_path=None):
+    def __init__(self, meta_dict, base_path=None, with_resources=True):
         """
         :param herb_meta_json: the dictionary that specifies the herb
         :type herb_meta_json: dict
@@ -33,6 +33,8 @@ class Herb(object):
             self.base_path = base_path
         if isinstance(self.base_path, str):
             self.base_path = Path(self.base_path)
+
+        self.with_resources = with_resources
 
         if isinstance(meta_dict, dict):
             self.herb_meta_json = meta_dict
@@ -69,10 +71,11 @@ class Herb(object):
         if not self.datapackage:
             self.update_datapackage()
 
-        self.resources = [
-            self.get_resource(i, source_only=False)
-            for i in range(len(self.datapackage.resources))
-        ]
+        if self.with_resources:
+            self.resources = [
+                self.get_resource(i, source_only=False)
+                for i in range(len(self.datapackage.resources))
+            ]
 
     def get_resource(self, idx=None, path=None, name=None, source_only=True):
         if idx is None:
@@ -98,7 +101,7 @@ class Herb(object):
                 )
 
         if self.is_local:
-            logger.info(
+            logger.debug(
                 f"Using local dataset for {self.id}, sync it if you need the updated version."
             )
             r = self.datapackage.resources[idx]

@@ -1,0 +1,62 @@
+{% for resource in page.meta["datapackage"]["resources"] %}
+<h3>{{ resource.name }}</h3>
+<div class="md-typeset__scrollwrap">
+    <div class="md-typeset__table">
+        <table>
+            <tbody>
+                <tr>
+                    <td><code>Name</code></td>
+                    <td>
+                        {{ resource.name }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Path</code></td>
+                    <td>
+                        {{ resource.path }}
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Format</code></td>
+                    <td>
+                        {{ resource.format }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if resource.schema.fields %}
+
+<p>List of fields of the resource:</p>
+
+<div class="md-typeset__scrollwrap">
+    <div class="md-typeset__table">
+        <table>
+            <thead>
+                <tr>
+                    <th role="columnheader">Field</th>
+                    <th role="columnheader">Type</th>
+                    <th role="columnheader">Format</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in resource.schema.fields %}
+                <tr>
+                    <td>{{ field.name }}</td>
+                    <td>
+                        {{ field.type }}
+                    </td>
+                    <td>
+                        {{ field.format }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endfor %}
