@@ -96,8 +96,23 @@ def configure(show, locate):
 
         config = {
             "workdir": answers.get("workdir"),
-            "default": {"flora": answers.get("default_flora")},
+            "default": {
+                "flora": answers.get("default_flora"),
+                "aggregrated": False # if false, we will use folders for each herb.
+            },
         }
+
+        flora_path_workdir = answers.get("workdir", "")
+        if flora_path_workdir.startswith("~"):
+            home = Path.home()
+            flora_path_workdir = str(home / flora_path_workdir[2:])
+
+        flora_path = Path(flora_path_workdir) / "flora" / f"{answers.get('default_flora')}"
+        if not flora_path.exists():
+            click.secho(f"{flora_path} doesn't exist. Creating {flora_path}...", fg="red")
+            flora_path.mkdir(parents=True)
+        else:
+            click.secho(f"{flora_path} exists, using the folder directly.", fg="green")
 
         logger.debug(f"config: {config}")
 
@@ -387,7 +402,7 @@ def remove(flora, herb_id):
     to_remove = click.confirm(f"Remove {herb_id} from the flora?", default=False)
     if to_remove:
         fl.remove(herb_id)
-        click.echo(f"Removed {herb_id} into the flora.")
+        click.echo(f"Removed {herb_id} from the flora.")
     else:
         click.echo("We did nothing.")
 
