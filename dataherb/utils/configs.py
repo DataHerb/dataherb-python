@@ -10,7 +10,12 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 class Config:
     """Config system for Dataherb"""
 
-    def __init__(self, config_path=None, no_config_error=False):
+    def __init__(self, is_aggregated=None, config_path=None, no_config_error=False):
+
+        if is_aggregated is None:
+            is_aggregated = False
+
+        self.is_aggregated = is_aggregated
 
         self.config_path = config_path
         self.no_config_error = no_config_error
@@ -33,7 +38,10 @@ class Config:
         if workdir is None:
             workdir = self.config["WD"]
 
-        which_flora_path = Path(workdir) / "flora" / Path(flora + ".json")
+        if self.is_aggregated:
+            which_flora_path = Path(workdir) / "flora" / Path(flora + ".json")
+        else:
+            which_flora_path = Path(workdir) / "flora" / Path(flora)
         logger.debug(f"Using flora path: {which_flora_path}")
         if not which_flora_path.exists():
             raise Exception(f"flora config {which_flora_path} does not exist")

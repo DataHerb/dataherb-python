@@ -99,7 +99,10 @@ class Flora(object):
                 raise Exception(f"herb id = {herb.id} already exists")
 
         self.flora.append(herb)
-        self.save()
+        if self.is_aggregated:
+            self.save()
+        else:
+            self.save(herb=herb)
 
     def remove(self, herb_id):
         """
@@ -116,11 +119,14 @@ class Flora(object):
         else:
             self.remove_herb_from_flora(herb_id)
 
-    def save(self, path=None, id=None):
+    def save(self, path=None, id=None, herb=None):
         """save flora metadata to json file"""
 
         if path is None:
             path = self.flora_config
+
+        if isinstance(path, str):
+            path = Path(path)
 
         logger.debug(
             f"type of a herb in flora: {type(self.flora[0])}\n{self.flora[0].metadata}"
@@ -137,8 +143,15 @@ class Flora(object):
                     serialized_flora, fp, sort_keys=True, indent=4, separators=(",", ": ")
                 )
         else:
-            if not id:
+            if (not id) and (not herb):
                 raise Exception("dataherb id must be provided")
+            elif herb:
+                logger.debug(f"Saving herb using herb object")
+                self.save_herb_meta(herb.id, path / f"{herb.id}")
+            elif id:
+                logger.debug(f"Saving herb using herb id")
+                self.save_herb_meta(id, path / f"{id}")
+
 
     def save_herb_meta(self, id, path=None):
         """Save a herb metadata to json file"""
