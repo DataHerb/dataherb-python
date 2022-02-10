@@ -58,7 +58,9 @@ def configure(show, locate):
     home = Path.home()
     config_path = home / ".dataherb" / "config.json"
 
-    if not show:
+    if locate:
+        click.launch(str(config_path.parent))
+    elif not show:
         if config_path.exists():
             is_overwite = click.confirm(
                 click.style(
@@ -130,9 +132,6 @@ def configure(show, locate):
                 json.dumps(c.config, indent=2, sort_keys=True, ensure_ascii=False)
             )
             click.secho(f"The above config is extracted from {config_path}")
-
-    if locate:
-        click.launch(str(config_path.parent))
 
 
 @dataherb.command()
@@ -279,10 +278,10 @@ def download(id, flora, workdir):
         click.echo(f"Could not find dataset with id {id}")
     else:
         result_metadata = result.metadata
-        click.echo(f'Downloading DataHerb ID: {result_metadata.get("id")}')
         result_uri = result_metadata.get("uri")
         result_id = result_metadata.get("id")
         dest_folder = str(Path(workdir) / result_id)
+        click.echo(f'Downloading DataHerb ID: {result_metadata.get("id")} into {dest_folder}')
         if os.path.exists(dest_folder):
             click.echo(f"Can not download dataset to {dest_folder}: folder exists.\n")
 
