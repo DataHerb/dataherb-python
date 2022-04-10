@@ -22,9 +22,14 @@ class SaveMkDocs(SaveModel):
     SaveMkDocs saves the dataset files from source as MkDocs files
     """
 
-    def __init__(self, flora, workdir):
+    def __init__(self, flora, workdir, folder):
 
         super().__init__(flora, workdir)
+        if folder is None:
+            folder = ".serve"
+        self.folder = folder
+        self.mkdocs_folder = Path(self.workdir) / self.folder
+        self.mkdocs_config = self.mkdocs_folder / "mkdocs.yml"
 
     @staticmethod
     def _generate_markdown_list_meta(dic_lists, name) -> str:
@@ -101,26 +106,20 @@ class SaveMkDocs(SaveModel):
     def create_mkdocs_theme(self):
         """copies the prepared theme to the serve dir"""
 
-        mkdocs_folder = Path(self.workdir) / "serve"
-
         mkdocs_template_path = Path(__file__).parent / "mkdocs_template"
 
-        copy_tree(str(mkdocs_template_path), str(mkdocs_folder))
+        copy_tree(str(mkdocs_template_path), str(self.mkdocs_folder))
 
     def create_mkdocs_yaml(self):
         """creates mkdocs.yaml from mkdocs_templates.py"""
 
-        mkdocs_folder = Path(self.workdir) / "serve"
-        mkdocs_yaml_path = mkdocs_folder / "mkdocs.yml"
-
-        with open(mkdocs_yaml_path, "w") as fp:
+        with open(self.mkdocs_config, "w") as fp:
             fp.write(_site_config)
 
     def create_mkdocs_index(self):
         """creates herbs/index.md from mkdocs_templates.py"""
 
-        mkdocs_folder = Path(self.workdir) / "serve"
-        mkdocs_index_path = mkdocs_folder / "herbs" / "index.md"
+        mkdocs_index_path = self.mkdocs_folder / "herbs" / "index.md"
 
         with open(mkdocs_index_path, "w") as fp:
             fp.write(_index_template)
@@ -131,7 +130,7 @@ class SaveMkDocs(SaveModel):
         """
 
         # attach working directory to all paths
-        md_folder = Path(self.workdir) / "serve" / "herbs"
+        md_folder = self.mkdocs_folder / "herbs"
 
         # create folders if necessary
         if md_folder.exists():

@@ -247,14 +247,13 @@ def serve(flora, workdir, dev_addr, recreate):
         workdir = c.workdir
 
     fl = Flora(flora=flora)
-    mk = SaveMkDocs(flora=fl, workdir=workdir)
-    mk.save_all(recreate=recreate)
 
-    mkdocs_config = str(Path(workdir) / "serve" / "mkdocs.yml")
+    mk = SaveMkDocs(flora=fl, workdir=workdir, folder=".serve")
+    mk.save_all(recreate=recreate)
 
     click.echo(f"Open http://{dev_addr}")
     click.launch(f"http://{dev_addr}")
-    _serve(config_file=mkdocs_config, dev_addr=dev_addr)
+    _serve(config_file=str(mk.mkdocs_config), dev_addr=dev_addr)
 
 
 @dataherb.command()
