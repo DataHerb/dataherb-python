@@ -43,7 +43,7 @@ class Flora(object):
 
     def _get_flora(self, flora_config):
         """
-        _get_flora fetch flora from the provided API.
+        _get_flora fetch flora from the provided API or file path.
         """
         if Path(flora_config).exists():
             if self.is_aggregated:
@@ -60,6 +60,7 @@ class Flora(object):
                 ]
         else:
             # assuming the config is a url if the local file does not exist
+            # The remote json has to return a list of dataherb metadata
             flora_request = _get_data_from_url(flora_config)
 
             if not flora_request.status_code == 200:

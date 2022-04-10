@@ -150,7 +150,13 @@ def configure(show, locate):
 @click.option(
     "--full/--summary", default=False, help="Whether to show the full json result"
 )
-def search(flora, id, keywords, full):
+@click.option(
+    "--locate/--no-locate",
+    "-l/ ",
+    default=False,
+    help="Locate the folder that contains the dataset, only works for --id mode",
+)
+def search(flora, id, keywords, full, locate):
     """
     search datasets on DataHerb by keywords or id
     """
@@ -195,6 +201,9 @@ def search(flora, id, keywords, full):
                 console.rule(title=f"{result.id}", characters="||")
                 click.secho(f"DataHerb ID: {result.id}")
                 click.echo(json.dumps(result_metadata, indent=2, sort_keys=True))
+
+            if locate:
+                click.launch(str(result.base_path))
 
 
 @dataherb.command()

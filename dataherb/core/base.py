@@ -23,8 +23,12 @@ class Herb(object):
 
     def __init__(self, meta_dict, base_path=None, with_resources=True):
         """
-        :param herb_meta_json: the dictionary that specifies the herb
-        :type herb_meta_json: dict
+        :param meta_dict: the dictionary that specifies the herb
+        :type meta_dict: dict
+        :param base_path: the path to the dataset
+        :type base_path: pathlib.Path
+        :param with_resources: whether to load the resources, i.e., data files
+        :type with_resources: bool
         """
         if base_path is None:
             CONFIG = load_dataherb_config()
