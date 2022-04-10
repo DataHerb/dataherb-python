@@ -174,8 +174,8 @@ class Herb(object):
         """
         search_score calcualtes the matching score of the herb for any given keyword
 
-        :param key_word: keyword for the search
-        :type key_word: list
+        :param keywords: keywords for the search
+        :type keywords: list
         :param keys: list of keys in the dictionary to look into.
         :type keys: list, optional
         """
