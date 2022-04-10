@@ -100,7 +100,7 @@ def configure(show, locate):
             "workdir": answers.get("workdir"),
             "default": {
                 "flora": answers.get("default_flora"),
-                "aggregrated": False # if false, we will use folders for each herb.
+                "aggregrated": False,  # if false, we will use folders for each herb.
             },
         }
 
@@ -109,9 +109,13 @@ def configure(show, locate):
             home = Path.home()
             flora_path_workdir = str(home / flora_path_workdir[2:])
 
-        flora_path = Path(flora_path_workdir) / "flora" / f"{answers.get('default_flora')}"
+        flora_path = (
+            Path(flora_path_workdir) / "flora" / f"{answers.get('default_flora')}"
+        )
         if not flora_path.exists():
-            click.secho(f"{flora_path} doesn't exist. Creating {flora_path}...", fg="red")
+            click.secho(
+                f"{flora_path} doesn't exist. Creating {flora_path}...", fg="red"
+            )
             flora_path.mkdir(parents=True)
         else:
             click.secho(f"{flora_path} exists, using the folder directly.", fg="green")
@@ -281,7 +285,9 @@ def download(id, flora, workdir):
         result_uri = result_metadata.get("uri")
         result_id = result_metadata.get("id")
         dest_folder = str(Path(workdir) / result_id)
-        click.echo(f'Downloading DataHerb ID: {result_metadata.get("id")} into {dest_folder}')
+        click.echo(
+            f'Downloading DataHerb ID: {result_metadata.get("id")} into {dest_folder}'
+        )
         if os.path.exists(dest_folder):
             click.echo(f"Can not download dataset to {dest_folder}: folder exists.\n")
 
