@@ -35,3 +35,13 @@ or
 ```bash
 dataherb search -i covid19_eu_data --full
 ```
+
+### Locate Local Folder of the Dataset
+
+Use the flag `-l` to locate the local folder of the dataset.
+
+```
+dataherb search -i covid19_eu_data -l
+```
+
+It only works when searching using the id (`-i`).
