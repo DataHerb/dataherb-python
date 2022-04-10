@@ -6,10 +6,10 @@ from pathlib import Path
 from loguru import logger
 
 from dataherb.core.base import Herb
-from dataherb.core.search import \
-    search_by_ids_in_flora as _search_by_ids_in_flora
-from dataherb.core.search import \
-    search_by_keywords_in_flora as _search_by_keywords_in_flora
+from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
+from dataherb.core.search import (
+    search_by_keywords_in_flora as _search_by_keywords_in_flora,
+)
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
 
@@ -140,7 +140,11 @@ class Flora(object):
 
             with open(path, "w") as fp:
                 json.dump(
-                    serialized_flora, fp, sort_keys=True, indent=4, separators=(",", ": ")
+                    serialized_flora,
+                    fp,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(",", ": "),
                 )
         else:
             if (not id) and (not herb):
@@ -151,7 +155,6 @@ class Flora(object):
             elif id:
                 logger.debug(f"Saving herb using herb id")
                 self.save_herb_meta(id, path / f"{id}")
-
 
     def save_herb_meta(self, id, path=None):
         """Save a herb metadata to json file"""
@@ -164,8 +167,7 @@ class Flora(object):
         logger.debug(f"Will replace dataherb id {id}")
         with open(path / "dataherb.json", "w") as fp:
             json.dump(
-                self.herb_meta(id), fp,
-                sort_keys=True, indent=4, separators=(",", ": ")
+                self.herb_meta(id), fp, sort_keys=True, indent=4, separators=(",", ": ")
             )
 
     def remove_herb_from_flora(self, id, path=None):
