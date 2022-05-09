@@ -1,6 +1,9 @@
-from abc import abstractclassmethod
 import sys
+from abc import abstractclassmethod, abstractmethod
+from typing import List
+
 from loguru import logger
+
 from dataherb.flora import Flora
 
 logger.remove()
@@ -14,7 +17,7 @@ class SourceModel:
 
     def __init__(self, path_to_datasets: str) -> None:
         self.path_to_datasets = path_to_datasets
-        self.metas = []
+        self.metas: List[dict] = []
 
     @abstractclassmethod
     def fetch_metadata(self):
@@ -35,14 +38,14 @@ class SaveModel:
         self.workdir = workdir
         self.kargs = kargs
 
-    @abstractclassmethod
+    @abstractmethod
     def save_json(self) -> None:
         raise NotImplementedError("Please implement save_json method")
 
-    @abstractclassmethod
+    @abstractmethod
     def save_markdown(self) -> None:
         raise NotImplementedError("Please implement save_markdown method")
 
-    @abstractclassmethod
-    def save_all(self) -> None:
+    @abstractmethod
+    def save_all(self, recreate) -> None:
         raise NotImplementedError("Please implement save_all method")

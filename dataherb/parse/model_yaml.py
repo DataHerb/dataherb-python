@@ -1,5 +1,6 @@
 import csv
-import os, sys
+import os
+import sys
 from collections import OrderedDict
 from pathlib import Path
 

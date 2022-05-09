@@ -1,12 +1,14 @@
 import logging
 import os
-from collections import OrderedDict
 import sys
-import git
+from collections import OrderedDict
 
 import click
+import git
 import inquirer
 import ruamel.yaml
+from ruamel.yaml.representer import RoundTripRepresenter
+
 from dataherb.flora import Flora
 from dataherb.parse.model import (
     IGNORED_FOLDERS_AND_FILES,
@@ -14,7 +16,6 @@ from dataherb.parse.model import (
     STATUS_CODE,
     MetaData,
 )
-from ruamel.yaml.representer import RoundTripRepresenter
 
 
 class MyRepresenter(RoundTripRepresenter):
@@ -279,8 +280,3 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
-
-
-if __name__ == "__main__":
-    fl = Flora()
-    pass

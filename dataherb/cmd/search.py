@@ -1,6 +1,6 @@
+from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
-from rich.panel import Panel
 
 
 class HerbTable:

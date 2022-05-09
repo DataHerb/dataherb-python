@@ -24,5 +24,3 @@ Using this configuration, we can simply store the json representing the flora an
 
 !!! note "Sync the Flora to GitHub"
     For example, we can version control the flora and push it to GitHub and pull it down on other devices. In this way, we can sync and restore the flora.
-
-

@@ -1,7 +1,8 @@
-from loguru import logger
 import json
 import sys
 from pathlib import Path
+
+from loguru import logger
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)

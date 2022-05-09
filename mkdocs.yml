@@ -97,4 +97,3 @@ nav:
 
 extra_javascript:
   - 'https://unpkg.com/mermaid@8.4.6/dist/mermaid.min.js'
-

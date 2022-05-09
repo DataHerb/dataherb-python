@@ -1,16 +1,17 @@
 import io
+import sys
 from pathlib import Path
 
 import click
 import pandas as pd
+from datapackage import Package, Resource
+from loguru import logger
+from rapidfuzz import fuzz
+
 from dataherb.cmd.configs import load_dataherb_config
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
 from dataherb.utils.data import flatten_dict as _flatten_dict
-from datapackage import Package, Resource
-from loguru import logger
-from rapidfuzz import fuzz
-import sys
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
@@ -205,7 +206,7 @@ class Herb(object):
         return max_score
 
     @property
-    def metadata(self, keys=None):
+    def metadata(self):
         """
         metadata formats the metadata of the herb
         """
