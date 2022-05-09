@@ -1,8 +1,9 @@
-from loguru import logger
-import os, sys
+import os
 import random
+import sys
 
 import requests
+from loguru import logger
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 

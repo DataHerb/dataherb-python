@@ -1,8 +1,9 @@
-import sys
 import json
+import sys
+from pathlib import Path
+
 import click
 import git
-from pathlib import Path
 
 
 def is_git_repo(path):

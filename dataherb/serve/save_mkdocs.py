@@ -1,17 +1,18 @@
 import json
-from distutils.dir_util import copy_tree
-import os, sys
-import click
-from pathlib import Path
+import os
+import sys
 import time
+from pathlib import Path
+
+import click
 import yaml
-
-from dataherb.serve.models import SaveModel
-from dataherb.serve.mkdocs_templates import site_config as _site_config
-from dataherb.serve.mkdocs_templates import index_template as _index_template
-
+from distutils.dir_util import copy_tree
 from loguru import logger
 from slugify import slugify
+
+from dataherb.serve.mkdocs_templates import index_template as _index_template
+from dataherb.serve.mkdocs_templates import site_config as _site_config
+from dataherb.serve.models import SaveModel
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)

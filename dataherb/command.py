@@ -509,8 +509,3 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
-
-
-if __name__ == "__main__":
-    fl = Flora()
-    pass

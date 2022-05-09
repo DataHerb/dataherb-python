@@ -1,6 +1,8 @@
 from os import path
-from setuptools import setup as _setup
+
 from setuptools import find_packages as _find_packages
+from setuptools import setup as _setup
+
 from dataherb.version import __version__
 
 # read the contents of your README file
@@ -33,7 +35,6 @@ def setup():
         packages=_find_packages(exclude=("tests",)),
         install_requires=_requirements(),
         include_package_data=True,
-        extras_require={"docs": ["sphinx>=2.4.1", "sphinx-rtd-theme>=0.4.3"]},
         entry_points={"console_scripts": ["dataherb=dataherb.command:dataherb"]},
         test_suite="nose.collector",
         tests_require=["nose"],
