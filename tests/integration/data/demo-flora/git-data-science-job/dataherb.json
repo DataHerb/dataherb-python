@@ -1,0 +1,138 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "windows-1252",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "indeed_job_listing",
+                "path": "dataset/indeed_job_listing.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "title",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "location",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "company",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "salary",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "url",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "published_at",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "id",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "stackoverflow_job_listing",
+                "path": "dataset/stackoverflow_job_listing.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "link",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "category",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "title",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "published_at",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "location",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "stackoverflow_id",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "author",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "location_country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "location_city",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "updated_at",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "A collection of data science job listings from stackoverflow jobs",
+    "id": "git-data-science-job",
+    "metadata_uri": "https://raw.githubusercontent.com/DataHerb/dataset-data-science-job/main/dataherb.json",
+    "name": "git-data-science-job",
+    "source": "git",
+    "uri": "https://github.com/DataHerb/dataset-data-science-job.git"
+}

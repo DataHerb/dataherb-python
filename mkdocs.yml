@@ -63,7 +63,8 @@ plugins:
             - import sys
             - sys.path.append("docs")
           selection:
-            docstring_style: "restructured-text"
+            docstring_style: "sphinx"
+            docstring_section_style: "spacy"
             members: yes
             filters:
               - "^_[^_]"

@@ -1,0 +1,58 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "eurostats_freight_modal_split",
+                "path": "dataset/eurostats_freight_modal_split.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "transport_mode",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "number"
+                        },
+                        {
+                            "format": "default",
+                            "name": "is_estimated",
+                            "type": "boolean"
+                        },
+                        {
+                            "format": "default",
+                            "name": "not_applicable",
+                            "type": "boolean"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "Modal split of freight transport Code: t2020_rk320 (% in total inland freight tonne-km) from Eurostats",
+    "id": "dataset-eurostats-freight-modal-split",
+    "metadata_uri": "https://raw.githubusercontent.com/datumorphism/dataset-eurostats-freight-modal-split/main/dataherb.json",
+    "name": "Eurostats Freight Modal Split",
+    "source": "git",
+    "uri": "https://github.com/datumorphism/dataset-eurostats-freight-modal-split.git"
+}

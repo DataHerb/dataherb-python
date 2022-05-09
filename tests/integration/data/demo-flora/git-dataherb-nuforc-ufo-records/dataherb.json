@@ -1,0 +1,63 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "nuforc_ufo_records",
+                "path": "dataset/nuforc_ufo_records.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "Date / Time",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "City",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "State",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "Shape",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "Duration",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "Summary",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "Posted",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "For Fun: National UFO Reporting Center UFO Events",
+    "id": "git-dataherb-nuforc-ufo-records",
+    "metadata_uri": "https://raw.githubusercontent.com/DataHerb/nuforc-ufo-rec/main/dataherb.json",
+    "name": "nuforc-ufo-records",
+    "source": "git",
+    "uri": "https://github.com/DataHerb/nuforc-ufo-records"
+}

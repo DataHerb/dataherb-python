@@ -1,0 +1,193 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "road_freight_goods_loaded_in_country_in_million_tonne_km",
+                "path": "dataset/road_freight_goods_loaded_in_country_in_million_tonne_km.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unload_country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "carriage",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "road_freight_goods_loaded_in_country_in_thousand_tonnes",
+                "path": "dataset/road_freight_goods_loaded_in_country_in_thousand_tonnes.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unload_country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "carriage",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "road_freight_goods_unloaded_in_country_in_million_tonne_km",
+                "path": "dataset/road_freight_goods_unloaded_in_country_in_million_tonne_km.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "load_country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "carriage",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "road_freight_goods_unloaded_in_country_in_thousand_tonnes",
+                "path": "dataset/road_freight_goods_unloaded_in_country_in_thousand_tonnes.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "load_country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "carriage",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "\"International quarterly road freight transport - goods loaded/unloaded in reporting country, by type of transport\"",
+    "id": "dataset-eurostats-goods-load-unload",
+    "metadata_uri": "https://raw.githubusercontent.com/datumorphism/dataset-eurostats-road-freight-goods-load-unload/main/dataherb.json",
+    "name": "\"goods load and unload from Eurostats\"",
+    "source": "git",
+    "uri": "https://github.com/datumorphism/dataset-eurostats-road-freight-goods-load-unload.git"
+}

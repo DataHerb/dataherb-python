@@ -1,0 +1,103 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "motorway_network_unit_km",
+                "path": "dataset/motorway_network_unit_km.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "transport_infrastructure",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "nuts_2",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "motorway_network_unit_km_per_thousand_square_km",
+                "path": "dataset/motorway_network_unit_km_per_thousand_square_km.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "transport_infrastructure",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "nuts_2",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "year",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "value",
+                            "type": "integer"
+                        },
+                        {
+                            "format": "default",
+                            "name": "unit",
+                            "type": "string"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "Motorways network by NUTS 2 regions (tgs00114) from Eurostats",
+    "id": "dataset-eu-motorways-network",
+    "metadata_uri": "https://raw.githubusercontent.com/datumorphism/dataset-eu-motorways-network/main/dataherb.json",
+    "name": "EU Motorways Network",
+    "source": "git",
+    "uri": "https://github.com/datumorphism/dataset-eu-motorways-network.git"
+}
