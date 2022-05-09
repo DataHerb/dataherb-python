@@ -1,0 +1,93 @@
+{
+    "datapackage": {
+        "profile": "tabular-data-package",
+        "resources": [
+            {
+                "encoding": "iso-8859-1",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "it_nuts_3",
+                "path": "dataset/it/centers/it_nuts_3.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "nuts_2",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "nuts_3",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "nuts_3_abbr",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "latitude",
+                            "type": "number"
+                        },
+                        {
+                            "format": "default",
+                            "name": "longitude",
+                            "type": "number"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            },
+            {
+                "encoding": "utf-8",
+                "format": "csv",
+                "mediatype": "text/csv",
+                "name": "de_states",
+                "path": "dataset/de/centers/de_states.csv",
+                "profile": "tabular-data-resource",
+                "schema": {
+                    "fields": [
+                        {
+                            "format": "default",
+                            "name": "country",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "state",
+                            "type": "string"
+                        },
+                        {
+                            "format": "default",
+                            "name": "latitude",
+                            "type": "number"
+                        },
+                        {
+                            "format": "default",
+                            "name": "longitude",
+                            "type": "number"
+                        }
+                    ],
+                    "missingValues": [
+                        ""
+                    ]
+                }
+            }
+        ]
+    },
+    "description": "Geography shapes of EU",
+    "id": "dataset-eu-geography-shapes",
+    "metadata_uri": "https://raw.githubusercontent.com/datumorphism/dataset-eu-geography-shapes/main/dataherb.json",
+    "name": "EU Geography Shapes",
+    "source": "git",
+    "uri": "https://github.com/datumorphism/dataset-eu-geography-shapes.git"
+}
