@@ -52,4 +52,4 @@ jobs:
           echo "flake8 BLK"
           flake8 durst --count --exit-zero --max-complexity=18 --statistics --select BLK
       - name: Test with pytest
-        run: nosetests
+        run: pytest
