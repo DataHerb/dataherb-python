@@ -1,7 +1,9 @@
 import json
 import shutil
 import sys
+import validators
 from pathlib import Path
+from yarl import URL
 
 from loguru import logger
 
@@ -25,48 +27,39 @@ class Flora:
     A container of datasets. It loads a local folder of dataset metadata and
      forms a list of dataset objects.
 
+    The provided local path or remote resource will then be converted to a list
+    of dataherb objects.
+
     :param flora: path to the flora database. Either an URL or a local path.
     :param is_aggregated: if True, the flora is aggregated into one json file.
     """
 
-    def __init__(self, flora: str, is_aggregated: bool = False):
+    def __init__(self, flora_path: Union[Path, URL], is_aggregated: bool = False):
 
         self.is_aggregated = is_aggregated
 
-        if not isinstance(flora, str):
-            raise Exception(f"flora must be a json file or a url. ({flora})")
-        else:
-            if flora.endswith(".json"):
+        if not isinstance(flora_path, (Path, URL)):
+            raise Exception(f"flora must be a path or a url. ({flora_path})")
+
+        if isinstance(flora_path, URL):
+            self.flora = self._get_remote_flora(flora_path)
+
+        if isinstance(flora_path, Path):
+            if flora_path.suffix == ".json":
                 self.is_aggregated = True
-            self.workdir = Path(flora).parent.parent
-            self.flora_config: str = flora
-            self.flora = self._get_flora(flora)
+            self.workdir = flora_path.parent.parent
+            self.flora_path = flora_path
+            self.flora = self._get_local_flora(flora_path)
+
+        if is_aggregated != self.is_aggregated:
+            logger.warning(
+                f"flora has is_aggregated={self.is_aggregated}, "
+                "but was specified as is_aggregated={is_aggregated}."
+            )
 
         logger.debug(f"flora workdir {self.workdir}")
 
-    def _get_flora(self, flora_config: str) -> List[Herb]:
-        """
-        _get_flora fetch flora from the provided API or file path.
-
-        This method will first assume the config is a local flora.
-         If the local flora doesn't exist, this method will assume
-         that the config is a url of a json.
-         For now, the remote json has to return a list of dataherb metadata.
-
-        The provided file or remote resource will then be converted to a list
-        of dataherb objects.
-        """
-        if Path(flora_config).exists():
-            json_flora = self._get_local_flora(flora_config)
-        else:
-            json_flora = self._get_remote_flora(flora_config)
-
-        return [
-            Herb(herb, base_path=self.workdir / f'{herb.get("id", "")}')
-            for herb in json_flora
-        ]
-
-    def _get_local_flora(self, flora_config: str) -> List[dict]:
+    def _get_local_flora(self, flora_config: Path) -> List[Herb]:
         """
         _get_local_flora fetch flora from the local folder or file.
 
@@ -77,17 +70,20 @@ class Flora:
         """
         if self.is_aggregated:
             with open(flora_config, "r") as f:
-                flora = json.load(f)
+                json_flora = json.load(f)
         else:
             flora_folder = Path(flora_config)
             herb_paths = [f for f in flora_folder.iterdir() if f.is_dir()]
-            flora = [
+            json_flora = [
                 json.load(open(f.joinpath("dataherb.json"), "r")) for f in herb_paths
             ]
 
-        return flora
+        return [
+            Herb(herb, base_path=self.workdir / f'{herb.get("id", "")}')
+            for herb in json_flora
+        ]
 
-    def _get_remote_flora(self, flora_config: str) -> List[dict]:
+    def _get_remote_flora(self, flora_config: str) -> List[Herb]:
         """
         _get_remote_flora fetch flora from the remote API.
 
@@ -103,14 +99,33 @@ class Flora:
                 )
             )
         else:
-            flora = flora_request.json()
+            json_flora = flora_request.json()
 
-        return flora
+        return [
+            Herb(herb, base_path=self.workdir / f'{herb.get("id", "")}')
+            for herb in json_flora
+        ]
 
     def add(self, herb: Union[Herb, dict, MetaData]) -> None:
         """
         Add a herb to the flora.
         """
+
+        herb = self._convert_to_herb(herb)
+
+        logger.debug(f"adding herb with metadata: {herb.metadata}")
+
+        for h_exist in self.flora:
+            if herb.id == h_exist.id:
+                raise Exception(f"herb id = {herb.id} already exists")
+
+        self.flora.append(herb)
+        if self.is_aggregated:
+            self.save(path=self.flora_path)
+        else:
+            self.save(herb=herb)
+
+    def _convert_to_herb(self, herb: Union[Herb, dict, MetaData]) -> Herb:
         if isinstance(herb, MetaData):
             herb = Herb(herb.metadata)
         elif isinstance(herb, dict):
@@ -120,17 +135,7 @@ class Flora:
         else:
             raise Exception(f"Input herb type ({type(herb)}) is not supported.")
 
-        logger.debug(f"metadata: {herb.metadata}")
-
-        for id in [i.id for i in self.flora]:
-            if id == herb.id:
-                raise Exception(f"herb id = {herb.id} already exists")
-
-        self.flora.append(herb)
-        if self.is_aggregated:
-            self.save()
-        else:
-            self.save(herb=herb)
+        return herb
 
     def remove(self, herb_id: str) -> None:
         """
@@ -143,18 +148,15 @@ class Flora:
         self.flora = [h for h in self.flora if h.id != herb_id]
 
         if self.is_aggregated:
-            self.save()
+            self.save(path=self.flora_path)
         else:
             self.remove_herb_from_flora(herb_id)
 
-    def save(self, path: str = None, id: str = None, herb: Herb = None) -> None:
+    def save(self, path: Path = None, id: str = None, herb: Herb = None) -> None:
         """save flora metadata to json file"""
 
         if path is None:
-            path = self.flora_config
-
-        if isinstance(path, str):
-            path = Path(path)
+            path = self.flora_path
 
         logger.debug(
             f"type of a herb in flora: {type(self.flora[0])}\n{self.flora[0].metadata}"
@@ -184,7 +186,7 @@ class Flora:
                 logger.debug(f"Saving herb using herb id")
                 self.save_herb_meta(id, path / f"{id}")
 
-    def save_herb_meta(self, id: str, path: str = None) -> None:
+    def save_herb_meta(self, id: str, path: Path = None) -> None:
         """Save a herb metadata to json file"""
         if path is None:
             path = self.workdir / f"{id}"
@@ -198,7 +200,7 @@ class Flora:
                 self.herb_meta(id), fp, sort_keys=True, indent=4, separators=(",", ": ")
             )
 
-    def remove_herb_from_flora(self, id: str, path: str = None) -> None:
+    def remove_herb_from_flora(self, id: str, path: Path = None) -> None:
         """Remove a herb metadata to json file"""
         if path is None:
             path = self.workdir / f"{id}"
@@ -241,7 +243,7 @@ class Flora:
 
             return herb.metadata
         else:
-            return
+            return None
 
     def herb(self, id: str) -> Optional[Herb]:
         """
@@ -262,4 +264,4 @@ class Flora:
             return herb
         else:
             logger.error(f"Could not find herb {id}")
-            return
+            return None

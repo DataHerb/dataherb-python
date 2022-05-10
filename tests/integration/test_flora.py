@@ -1,10 +1,25 @@
 from dataherb.flora import Flora
-from datapackage import Resource
 
 
-def test_flora(flora_path):
+def test_flora_herbmeta(flora_path):
 
-    fl = Flora(flora=flora_path)
+    id = "git-data-science-job"
+    fl = Flora(flora_path=flora_path)
+
+    fl.herb_meta(id)
+
+
+def test_flora_search(flora_path):
+
+    keyword = "data science"
+    fl = Flora(flora_path=flora_path)
+
+    fl.search(keywords=keyword)
+
+
+def test_flora_herb_by_id(flora_path):
+
+    fl = Flora(flora_path=flora_path)
 
     hb = fl.herb("git-data-science-job")
 
