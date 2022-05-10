@@ -36,8 +36,7 @@ def dataherb(ctx):
         click.echo("Hello {}".format(os.environ.get("USER", "")))
         click.echo("Welcome to DataHerb.")
     else:
-        # click.echo("Loading Service: %s" % ctx.invoked_subcommand)
-        pass
+        click.echo("Loading Service: %s" % ctx.invoked_subcommand)
 
 
 @dataherb.command()
