@@ -164,7 +164,7 @@ def search(flora, id, keywords, full, locate):
         c = Config()
         flora = c.flora_path
 
-    fl = Flora(flora=flora)
+    fl = Flora(flora_path=flora)
     if not id:
         click.echo("Searching Herbs in DataHerb Flora ...")
         results = fl.search(keywords)
@@ -246,7 +246,7 @@ def serve(flora, workdir, dev_addr, recreate):
         c = Config()
         workdir = c.workdir
 
-    fl = Flora(flora=flora)
+    fl = Flora(flora_path=flora)
 
     mk = SaveMkDocs(flora=fl, workdir=workdir, folder=".serve")
     mk.save_all(recreate=recreate)
@@ -283,7 +283,7 @@ def download(id, flora, workdir):
         c = Config()
         workdir = c.workdir
 
-    fl = Flora(flora=flora)
+    fl = Flora(flora_path=flora)
     click.echo(f"Fetching Herbs {id} in DataHerb Flora ...")
     result = fl.herb(id)
     if not result:
@@ -344,7 +344,7 @@ def create(flora):
             show_default=True,
         )
 
-    fl = Flora(flora=flora)
+    fl = Flora(flora_path=flora)
     md = MetaData(folder=__CWD__)
 
     if use_existing_dpkg:
@@ -405,7 +405,7 @@ def remove(flora, herb_id):
         c = Config()
         flora = c.flora_path
 
-    fl = Flora(flora=flora)
+    fl = Flora(flora_path=flora)
     herb = fl.herb(herb_id)
     if not herb:
         click.echo(click.style(f"Could not find herb with id {herb_id}", fg="red"))
