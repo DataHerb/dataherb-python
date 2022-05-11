@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 from pathlib import Path
 
 import click
@@ -63,7 +64,7 @@ def configure(show, locate):
     config_path = home / ".dataherb" / "config.json"
 
     if locate:
-        click.launch(str(config_path.parent))
+        click.launch(config_path.parent)
     elif not show:
         if config_path.exists():
             is_overwite = click.confirm(
@@ -316,11 +317,11 @@ def download(id, flora, workdir):
         result_metadata = result.metadata
         result_uri = result_metadata.get("uri")
         result_id = result_metadata.get("id")
-        dest_folder = str(Path(workdir) / result_id)
+        dest_folder = Path(workdir) / result_id
         click.echo(
             f'Downloading DataHerb ID: {result_metadata.get("id")} into {dest_folder}'
         )
-        if os.path.exists(dest_folder):
+        if dest_folder.exists():
             click.echo(f"Can not download dataset to {dest_folder}: folder exists.\n")
 
             is_pull = click.confirm(f"Would you like to pull from remote?")
@@ -332,10 +333,8 @@ def download(id, flora, workdir):
                     f"Please go to the folder {dest_folder} and sync your repo manually."
                 )
         else:
-            # dest_folder_parent = f"./{result_repository.split('/')[0]}"
-            os.makedirs(dest_folder)
+            dest_folder.mkdir(parents=True, exist_ok=False)
             repo = git.repo.base.Repo.clone_from(result_uri, to_path=dest_folder)
-            # git.Git(dest_folder).clone(result_uri)
 
 
 @dataherb.command()

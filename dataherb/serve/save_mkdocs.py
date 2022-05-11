@@ -158,7 +158,7 @@ class SaveMkDocs(SaveModel):
         for herb in self.flora.flora:
             herb_id = slugify(herb.id)
 
-            herb_md_path = os.path.join(md_folder, f"{herb_id}.md")
+            herb_md_path = md_folder / f"{herb_id}.md"
             # generate markdown files
             self.save_one_markdown(herb, herb_md_path)
 
