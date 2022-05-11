@@ -6,8 +6,7 @@ from rich.tree import Tree
 class HerbTable:
     """Format search result
 
-    A flora search result has the following structure:
-    ```
+    A flora search result has a table structure.
     """
 
     def __init__(self, herb):
