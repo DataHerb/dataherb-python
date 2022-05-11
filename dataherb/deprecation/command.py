@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from collections import OrderedDict
+from pathlib import Path
 
 import click
 import git
@@ -29,7 +30,8 @@ ruamel.yaml.add_representer(
 yaml = ruamel.yaml.YAML()
 yaml.Representer = MyRepresenter
 
-__CWD__ = os.getcwd()
+__CWD__ = Path(__file__).parent.resolve()
+
 
 logging.basicConfig()
 logger = logging.getLogger("dataherb.command")
