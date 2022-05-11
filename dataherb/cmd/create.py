@@ -5,7 +5,7 @@ import click
 import inquirer
 from loguru import logger
 
-from dataherb.parse.model_json import IGNORED_FOLDERS_AND_FILES
+from dataherb.parse.utils import IGNORED_FOLDERS_AND_FILES
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)

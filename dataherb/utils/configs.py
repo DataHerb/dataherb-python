@@ -47,7 +47,7 @@ class Config:
         if not which_flora_path.exists():
             raise Exception(f"flora config {which_flora_path} does not exist")
 
-        return str(which_flora_path)
+        return which_flora_path
 
     @property
     def config(self):

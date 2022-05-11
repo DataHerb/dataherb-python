@@ -10,12 +10,13 @@ import ruamel.yaml
 from ruamel.yaml.representer import RoundTripRepresenter
 
 from dataherb.flora import Flora
-from dataherb.parse.model import (
+from dataherb.parse.utils import (
     IGNORED_FOLDERS_AND_FILES,
     MESSAGE_CODE,
     STATUS_CODE,
-    MetaData,
 )
+
+from dataherb.parse.model_yaml import MetaData
 
 
 class MyRepresenter(RoundTripRepresenter):
