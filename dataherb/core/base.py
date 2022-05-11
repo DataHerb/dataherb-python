@@ -8,7 +8,7 @@ from datapackage import Package, Resource
 from loguru import logger
 from rapidfuzz import fuzz
 
-from dataherb.cmd.configs import load_dataherb_config
+from dataherb.utils.configs import Config
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
 from dataherb.utils.data import flatten_dict as _flatten_dict
@@ -32,8 +32,8 @@ class Herb(object):
         :type with_resources: bool
         """
         if base_path is None:
-            CONFIG = load_dataherb_config()
-            self.base_path = CONFIG["workdir"]
+            c = Config()
+            self.base_path = c.workdir
         else:
             self.base_path = base_path
         if isinstance(self.base_path, str):
