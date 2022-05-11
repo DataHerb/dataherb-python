@@ -40,7 +40,7 @@ STATUS_CODE = {
 }
 
 
-class MetaData(object):
+class MetaData:
     def __init__(self):
         self.dataherb_folder = ".dataherb"
         self.metadata_file = "metadata.yml"

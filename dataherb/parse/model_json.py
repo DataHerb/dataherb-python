@@ -1,113 +1,84 @@
-import csv
 import json
-import os
 import sys
-from collections import OrderedDict
 from pathlib import Path
 
-import ruamel.yaml
 from loguru import logger
-from ruamel.yaml.representer import RoundTripRepresenter
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
 
-IGNORED_FOLDERS_AND_FILES = [".git", ".dataherb", ".vscode"]
 
+class MetaData:
+    """
+    JSON metadata object
 
-MESSAGE_CODE = {
-    "MISSING": lambda x: f"{x} is missing",
-    "FILE_NOT_FOUND": lambda x: f"{x} was not found",
-    "FILE_FOUND": lambda x: f"{x} was found",
-    "EXISTS": lambda x: f"{x} exists",
-    "FREE_MESSAGE": lambda x: f"{x}",
-}
+    :param folder: path to the dataherb folder
+    """
 
-STATUS_CODE = {
-    "UNKNOWN": "unknown",
-    "SUCCESS": "success",
-    "WARNING": "warning",
-    "ERROR": "error",
-}
-
-
-class MetaData(object):
-    def __init__(self, folder):
+    def __init__(self, folder: Path):
         self.dataherb_folder = folder
         self.metadata_file = "dataherb.json"
-        self.metadata = {}
+        self.metadata: dict = {}
 
-    def load(self):
+    def load(self) -> dict:
         """load the existing datapackage file"""
-        folder = self.dataherb_folder
-        metadata_file = Path(folder) / self.metadata_file
-        logger.debug(f"Load metadata from file: {metadata_file}")
-        with open(metadata_file, "r") as fp:
+        metadata_full_path = self.dataherb_folder / self.metadata_file
+        logger.debug(f"Load metadata from file: {metadata_full_path}")
+        with open(metadata_full_path, "r") as fp:
             self.metadata = json.load(fp)
 
         logger.debug(f"Loaded metadata: {self.metadata}")
 
-    def create(self, overwrite=False):
-        """creates dataherb.json file"""
-        # create .dataherb folder
-        dataherb_folder = self.dataherb_folder
+        return self.metadata
+
+    def create(self, overwrite: bool = False) -> None:
+        """creates .dataherb folder"""
+
         try:
-            os.mkdir(dataherb_folder)
-            logger.info("Created ", dataherb_folder)
+            self.dataherb_folder.mkdir(parents=True, exist_ok=False)
+            logger.info("Created ", self.dataherb_folder)
         except FileExistsError:
-            logger.info(
-                dataherb_folder,
-                " already exists! Creating dataherb.json file inside.",
+            logger.warning(
+                f"{self.dataherb_folder} already exists! Will use the folder."
+                "Pass the flag `overwrite=True` to recreate it, if one desires."
             )
-            pass
 
-        metadata_file = self.metadata_file
+        metadata_full_path = self.dataherb_folder / self.metadata_file
 
-        if os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
+        if metadata_full_path.is_file():
             if not overwrite:
-                logger.error(
-                    f"File {os.path.join(dataherb_folder, metadata_file)} already exists!"
-                )
-                raise SystemExit
+                raise FileExistsError(f"File {metadata_full_path} already exists!")
             else:
-                logger.debug(
-                    f"Will overwrite {os.path.join(dataherb_folder, metadata_file)}"
-                )
+                logger.warning(f"Will overwrite {metadata_full_path}")
 
-        with open(os.path.join(dataherb_folder, metadata_file), "w") as fp:
-            documents = json.dump(self.metadata, fp, indent=4)
+        with open(metadata_full_path, "w") as fp:
+            json.dump(self.metadata, fp, indent=4)
 
-    def validate(self):
+        logger.debug(f"written to {metadata_full_path}")
+
+    def validate(self) -> None:
         """validate the existing metadata file"""
 
-        dataherb_folder = self.dataherb_folder
-        metadata_file = self.metadata_file
-        summary = {}
+        metadata_full_path = self.dataherb_folder / self.metadata_file
 
-        try:
-            if not os.path.exists(dataherb_folder):
-                logger.error(f"Folder {dataherb_folder} does'nt exists!")
-                raise Exception(f"Path {dataherb_folder} doesn't exist!")
-            if not os.path.isfile(os.path.join(dataherb_folder, metadata_file)):
-                logger.error(
-                    f"File {os.path.join(dataherb_folder, metadata_file)} doesn'nt exists!"
-                )
-                raise SystemExit
+        self._validate_paths()
 
-            with open(os.path.join(dataherb_folder, metadata_file), "r") as fp:
-                documents = json.load(fp)
+        with open(metadata_full_path, "r") as fp:
+            metadata = json.load(fp)
+        logger.info("loaded metadata ", self.dataherb_folder)
+        logger.debug(f"loaded metadata {metadata}")
 
-            logger.info("loaded metadata ", dataherb_folder)
-        except FileExistsError:
-            logger.info(
-                dataherb_folder, " already exists! Creating metadata.yml file inside."
-            )
-            pass
+    def _validate_paths(self) -> None:
+        """Check if the metadata path exists"""
 
-        data = self._parse_leaves(documents)
+        metadata_full_path = self.dataherb_folder / self.metadata_file
 
-        data_summary = summary.get("data", [])
+        if not self.dataherb_folder.exists():
+            raise Exception(f"Path {self.dataherb_folder} doesn't exist!")
+        else:
+            logger.info(f"Path {self.dataherb_folder} exists.")
 
-        summary["data"] = data_summary
-
-        return summary
+        if not metadata_full_path.is_file():
+            raise FileNotFoundError(f"File {metadata_full_path} doesn't exist!")
+        else:
+            logger.info(f"File {metadata_full_path} exists!")

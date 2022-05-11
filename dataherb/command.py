@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -17,7 +16,8 @@ from dataherb.cmd.sync_git import upload_dataset_to_git
 from dataherb.cmd.sync_s3 import upload_dataset_to_s3
 from dataherb.core.base import Herb
 from dataherb.flora import Flora
-from dataherb.parse.model_json import STATUS_CODE, MetaData
+from dataherb.parse.utils import STATUS_CODE
+from dataherb.parse.model_json import MetaData
 from dataherb.serve.save_mkdocs import SaveMkDocs
 from dataherb.utils.configs import Config
 
@@ -26,7 +26,7 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 console = Console()
 
 
-__CWD__ = os.getcwd()
+__CWD__ = Path(__file__).parent.resolve()
 
 
 @click.group(invoke_without_command=True)
@@ -51,7 +51,12 @@ def dataherb(ctx):
 )
 def configure(show, locate):
     """
-    Configure dataherb; inspect, or lcoate the current configurations.
+    Configure dataherb; inspect, or locate the current configurations.
+
+    :param show: if flag is given, will show the current configuration instead of starting
+        the configuration process.
+    :param locate: if flag is given, will locate the configuration folder
+        and open in filesystem.
     """
 
     home = Path.home()
@@ -158,6 +163,13 @@ def configure(show, locate):
 def search(flora, id, keywords, full, locate):
     """
     search datasets on DataHerb by keywords or id
+
+    :param flora: the path to the flora file. If not given,
+        will use the default flora in the configuration.
+    :param id: the id of the dataset to find.
+    :param keywords: the keywords to search.
+    :param full: whether to show the full json result.
+    :param locate: if flag is given, will locate the dataset folder.
     """
     if flora is None:
         c = Config()
@@ -234,7 +246,14 @@ def search(flora, id, keywords, full, locate):
 )
 def serve(flora, workdir, dev_addr, recreate):
     """
-    create a dataherb server and view the flora in your browser
+    create a dataherb server and view the flora in your browser.
+
+    :param flora: the path to the flora file. If not given,
+        will use the default flora in the configuration.
+    :param workdir: the path to the work directory. If not given,
+        will use the workdir in the configuration.
+    :param dev_addr: the address of the dev server.
+    :param recreate: whether to recreate the website.
     """
 
     if flora is None:
@@ -271,7 +290,13 @@ def serve(flora, workdir, dev_addr, recreate):
 )
 def download(id, flora, workdir):
     """
-    Download dataset using id
+    Download dataset using id.
+
+    :param id: the id of the dataset to download.
+    :param flora: the path to the flora file. If not given,
+        will use the default flora in the configuration.
+    :param workdir: the path to the work directory. If not given,
+        will use the workdir in the configuration.
     """
 
     if flora is None:
@@ -328,6 +353,9 @@ def download(id, flora, workdir):
 def create(flora):
     """
     creates metadata for current dataset
+
+    :param flora: the path to the flora file. If not given,
+        will use the default flora in the configuration.
     """
     if flora is None:
         c = Config()
@@ -335,7 +363,7 @@ def create(flora):
 
     use_existing_dpkg = False
 
-    if (Path(__CWD__) / "dataherb.json").exists():
+    if (__CWD__ / "dataherb.json").exists():
         use_existing_dpkg = click.confirm(
             f"A dataherb.json file already exists in {__CWD__}. "
             f"Shall we use the existing dataherb.json?",
@@ -360,7 +388,7 @@ def create(flora):
 
         md.metadata.update(pkg_descriptor)
 
-        if (Path(__CWD__) / "dataherb.json").exists():
+        if (__CWD__ / "dataherb.json").exists():
             is_overwrite = click.confirm(
                 "Replace the current dataherb.json file?", default=False
             )

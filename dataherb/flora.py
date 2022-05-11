@@ -25,7 +25,7 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 class Flora:
     """
     A container of datasets. It loads a local folder of dataset metadata and
-     forms a list of dataset objects.
+    forms a list of dataset objects.
 
     The provided local path or remote resource will then be converted to a list
     of dataherb objects.
