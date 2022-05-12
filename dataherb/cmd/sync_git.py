@@ -6,7 +6,12 @@ import click
 import git
 
 
-def is_git_repo(path):
+def is_git_repo(path: Path) -> bool:
+    """
+    checks if path is a git repo
+
+    :param path: path to check
+    """
     try:
         _ = git.Repo(path).git_dir
         return True
@@ -14,22 +19,35 @@ def is_git_repo(path):
         return False
 
 
-def get_dataherb(source):
+def get_dataherb(source: Path) -> dict:
+    """
+    get dataherb.json from source
 
-    if not (Path(source) / "dataherb.json").exists():
+    :param source: local folder
+    """
+
+    if not (source / "dataherb.json").exists():
         click.echo(
             f"No dataherb.json found in {source}. Please run `dataherb create` first."
         )
         sys.exit()
 
-    with open(Path(source) / "dataherb.json", "r") as f:
+    with open(source / "dataherb.json", "r") as f:
         data = json.load(f)
 
     return data
 
 
-def upload_dataset_to_git(source, target, experimental=False):
-    """uploads local folder to remote"""
+def upload_dataset_to_git(
+    source: Path, target: str, experimental: bool = False
+) -> None:
+    """
+    uploads local folder to remote
+
+    :param source: local folder
+    :param target: remote url
+    :param experimental: experimental flag
+    """
 
     is_git_initialized = is_git_repo(source)
 
