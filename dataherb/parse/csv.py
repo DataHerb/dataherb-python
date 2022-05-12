@@ -2,7 +2,6 @@ import sys
 
 from loguru import logger
 
-from dataherb.parse.model import MetaData
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
