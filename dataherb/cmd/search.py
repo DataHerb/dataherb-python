@@ -1,23 +1,31 @@
 from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
+from dataherb.core.base import Herb
+from typing import Dict
 
 
 class HerbTable:
-    """Format search result
+    """Format a herb object as a table.
 
-    A flora search result has a table structure.
+    For example, a flora search result can be formatted
+    as a table for the user to read easily.
+
+    :param herb: an Herb object
     """
 
-    def __init__(self, herb):
+    def __init__(self, herb: Herb):
         self.herb = herb
 
-    def panel(self):
+    def panel(self) -> Dict[str, Panel]:
+        """Create a panel with all the information"""
 
-        self.table()
-        self.resource_tree()
+        return {
+            "table": self.table(),
+            "tree": self.resource_tree(),
+        }
 
-    def table(self):
+    def table(self) -> Panel:
         """Summary Table"""
         table = Table(title=f"DataHerb: {self.herb.name}", show_lines=True)
 
@@ -35,7 +43,7 @@ class HerbTable:
 
         return pl
 
-    def resource_tree(self):
+    def resource_tree(self) -> Panel:
         """Show list of resources"""
 
         tree = Tree(f"{self.herb.id}")
