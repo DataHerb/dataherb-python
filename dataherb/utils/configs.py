@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from loguru import logger
+from typing import cast
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
@@ -11,7 +12,12 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 class Config:
     """Config system for Dataherb"""
 
-    def __init__(self, is_aggregated=None, config_path=None, no_config_error=False):
+    def __init__(
+        self,
+        is_aggregated: bool = None,
+        config_path: Path = None,
+        no_config_error: bool = False,
+    ):
 
         if is_aggregated is None:
             is_aggregated = False
@@ -33,7 +39,7 @@ class Config:
 
         # self.config = self.get_config(no_config_error=self.no_config_error)
 
-    def _flora_path(self, flora, workdir=None):
+    def _flora_path(self, flora, workdir: str = None) -> Path:
         """Get the full path to the specified flora"""
 
         if workdir is None:
@@ -57,15 +63,14 @@ class Config:
         """
         return self._config()
 
-    def _config(self, config_path=None):
+    def _config(self) -> dict:
         """Loads the dataherb config file."""
 
-        if config_path is None:
-            config_path = self.config_path
+        config_path = cast(Path, self.config_path)
 
         logger.debug(f"Using {config_path} as config file for dataherb")
         try:
-            with open(config_path, "r") as f:
+            with config_path.open(mode="r") as f:
                 conf = json.load(f)
 
             if not conf.get("workdir"):
@@ -97,12 +102,3 @@ class Config:
     @property
     def flora(self):
         return self.config.get("default", {}).get("flora")
-
-
-if __name__ == "__main__":
-    c = Config()
-
-    print(c.config)
-    print(c.flora_path)
-    print(c.workdir)
-    print(c.flora)
