@@ -1,9 +1,11 @@
+from email.utils import parsedate
 import json
 import sys
 from pathlib import Path
 
 import click
 import git
+import giturlparse
 
 
 def is_git_repo(path: Path) -> bool:
@@ -88,3 +90,30 @@ def upload_dataset_to_git(
                 origin.refs.master
             ).checkout()
             origin.push()
+
+
+def remote_git_repo(metadata_url: str):
+    """
+    parse a remote git repo url
+
+    :param metadata_url: remote url to metadata file
+    """
+
+    parsed = giturlparse.parse(metadata_url)
+
+    url_host_dispatcher = {"github.com": "https://raw.githubusercontent.com"}
+
+    if parsed.host not in url_host_dispatcher:
+        raise ValueError(f"{parsed.host} is not supported.")
+
+    return {
+        "metadata_uri": f"{url_host_dispatcher[parsed.host]}{parsed.pathname}",
+        "path": parsed.pathname,
+        "protocol": parsed.protocol,
+        "host": parsed.host,
+        "resource": parsed.resource,
+        "user": parsed.user,
+        "port": parsed.port,
+        "name": parsed.name,
+        "owner": parsed.owner,
+    }

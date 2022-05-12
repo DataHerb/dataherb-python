@@ -1,6 +1,6 @@
 import json
-import sys
 import os
+import sys
 from pathlib import Path
 
 import click
@@ -13,12 +13,13 @@ from rich.console import Console
 
 from dataherb.cmd.create import describe_dataset
 from dataherb.cmd.search import HerbTable
-from dataherb.cmd.sync_git import upload_dataset_to_git
+from dataherb.cmd.sync_git import remote_git_repo, upload_dataset_to_git
 from dataherb.cmd.sync_s3 import upload_dataset_to_s3
 from dataherb.core.base import Herb
+from dataherb.fetch.remote import get_data_from_url
 from dataherb.flora import Flora
-from dataherb.parse.utils import STATUS_CODE
 from dataherb.parse.model_json import MetaData
+from dataherb.parse.utils import STATUS_CODE
 from dataherb.serve.save_mkdocs import SaveMkDocs
 from dataherb.utils.configs import Config
 
@@ -535,3 +536,50 @@ def validate(verbose):
         " has been validated. Please read the summary and fix the errors.",
         bold=True,
     )
+
+
+@dataherb.command()
+@click.option(
+    "--flora",
+    "-f",
+    default=None,
+    help="Specify the path to the flora; defaults to default flora in configuration.",
+)
+@click.option(
+    "--source",
+    "-s",
+    type=click.Choice(["github"], case_sensitive=False),
+    default="github",
+    help="Source of remote data.",
+)
+@click.argument("uri", required=True)
+def add(flora, source, uri):
+    """
+    add herb to flora from a remote source
+
+    :param flora: path to flora
+    :param source: source of remote data
+    :param uri: uri to the remote dataset metadata file
+    """
+
+    if flora is None:
+        c = Config()
+        flora = c.flora_path
+
+    if not source:
+        raise ValueError("Please specify a supported source.")
+
+    if source == "github":
+        parsed = remote_git_repo(uri)
+        metadata_request = get_data_from_url(parsed["metadata_uri"])
+
+        if not metadata_request.status_code == 200:
+            raise Exception(
+                "Could not download metadata from remote. status code: {}".format(
+                    metadata_request.status_code
+                )
+            )
+        else:
+            metadata = metadata_request.json()
+
+        # TODO: save content to file

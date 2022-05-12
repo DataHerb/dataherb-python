@@ -4,24 +4,21 @@ from dataherb.core.base import Herb
 
 
 def search_by_keywords_in_flora(
-    flora, keywords: Sequence[str], keys: List[str] = None, min_score: float = 50
+    flora: List[Herb],
+    keywords: List[str],
+    keys: List[str] = None,
+    min_score: float = 50,
 ) -> List[dict]:
     """
     search_in_flora calculates the match score of each herb and returns the top 10.
 
     :param flora: list of herbs
-    :type flora: list
     :param keywords: search keywords
-    :type keywords: list
     :param keys: list of dictionary keys to look into
-    :type keys: list, optional
     :param min_score: minimum score of the dataset, default to 50
-    :type min_score: float, optional
-    :return: herbs that matches the requirements
-    :rtype: list
     """
 
-    if not isinstance(keywords, Sequence):
+    if not isinstance(keywords, List):
         keywords = [keywords]
 
     herb_scores = []

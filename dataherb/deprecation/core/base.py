@@ -4,7 +4,7 @@ import click
 import pandas as pd
 from loguru import logger
 
-from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.fetch.remote import get_data_from_url
 
 
 class Leaf:
@@ -35,7 +35,7 @@ class Leaf:
         """
 
         # Fetch data from remote
-        file_content = _get_data_from_url(self.url)
+        file_content = get_data_from_url(self.url)
         if not file_content.status_code == 200:
             file_error_msg = "Could not fetch remote file: {}; {}".format(
                 self.url, file_content.status_code

@@ -9,7 +9,7 @@ from loguru import logger
 from rapidfuzz import fuzz
 
 from dataherb.utils.configs import Config
-from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.fetch.remote import get_data_from_url
 from dataherb.parse.model_json import MetaData
 from dataherb.utils.data import flatten_dict as _flatten_dict
 from typing import Optional, List, Tuple, Set, Union
@@ -28,7 +28,7 @@ class Herb:
     :param with_resources: whether to load the resources, i.e., data files.
     """
 
-    def __init__(self, meta_dict: dict, base_path: Optional[Path], with_resources=True):
+    def __init__(self, meta_dict: dict, base_path: Path = None, with_resources=True):
         """
         :param meta_dict: the dictionary that specifies the herb
         :type meta_dict: dict
@@ -74,7 +74,7 @@ class Herb:
         self.name = meta_dict.get("name")
         self.description = meta_dict.get("description")
         self.repository = meta_dict.get("repository")  # Deprecated
-        self.id = meta_dict.get("id")
+        self.id = meta_dict.get("id", "")
 
         self.source = meta_dict.get("source")
         self.metadata_uri = meta_dict.get("metadata_uri", "")
@@ -160,7 +160,7 @@ class Herb:
         """
 
         if self.source == "git":
-            file_content = _get_data_from_url(self.metadata_uri)
+            file_content = get_data_from_url(self.metadata_uri)
 
             if not file_content.status_code == 200:
                 file_error_msg = "Could not fetch remote file: {}; {}".format(

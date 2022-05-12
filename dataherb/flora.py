@@ -9,10 +9,8 @@ from loguru import logger
 
 from dataherb.core.base import Herb
 from dataherb.core.search import search_by_ids_in_flora as _search_by_ids_in_flora
-from dataherb.core.search import (
-    search_by_keywords_in_flora as _search_by_keywords_in_flora,
-)
-from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
+from dataherb.core.search import search_by_keywords_in_flora
+from dataherb.fetch.remote import get_data_from_url
 from dataherb.parse.model_json import MetaData
 from typing import List, Union, Optional
 from dataherb.core.base import Herb
@@ -83,14 +81,14 @@ class Flora:
             for herb in json_flora
         ]
 
-    def _get_remote_flora(self, flora_config: str) -> List[Herb]:
+    def _get_remote_flora(self, flora_config: URL) -> List[Herb]:
         """
         _get_remote_flora fetch flora from the remote API.
 
         !!! warning
             Currently, this mode only works for aggregated json flora.
         """
-        flora_request = _get_data_from_url(flora_config)
+        flora_request = get_data_from_url(flora_config)
 
         if not flora_request.status_code == 200:
             raise Exception(
@@ -181,7 +179,7 @@ class Flora:
                 raise Exception("dataherb id must be provided")
             elif herb:
                 logger.debug(f"Saving herb using herb object")
-                self.save_herb_meta(herb.id, path / f"{herb.id}")
+                self.save_herb_meta(id=herb.id, path=path / f"{herb.id}")
             elif id:
                 logger.debug(f"Saving herb using herb id")
                 self.save_herb_meta(id, path / f"{id}")
@@ -216,7 +214,7 @@ class Flora:
                     f"Can not remove herb id {id}: {e.filename} - {e.strerror}."
                 )
 
-    def search(self, keywords: Union[str, List[str]]) -> List[Herb]:
+    def search(self, keywords: Union[str, List[str]]) -> List[dict]:
         """
         search finds the datasets that matches the keywords
 
@@ -225,7 +223,7 @@ class Flora:
         if isinstance(keywords, str):
             keywords = [keywords]
 
-        return _search_by_keywords_in_flora(self.flora, keywords)
+        return search_by_keywords_in_flora(flora=self.flora, keywords=keywords)
 
     def herb_meta(self, id: str) -> Optional[dict]:
         """
@@ -237,11 +235,11 @@ class Flora:
         herbs = _search_by_ids_in_flora(self.flora, id)
 
         if herbs:
-            herb = herbs[0]
-
-            herb = herb.get("herb")
-
-            return herb.metadata
+            herb = herbs[0].get("herb")
+            if herb:
+                return herb.metadata
+            else:
+                return None
         else:
             return None
 
@@ -259,9 +257,11 @@ class Flora:
             )
 
         if herbs:
-            herb = herbs[0]
-            herb = herb.get("herb")
-            return herb
+            herb = herbs[0].get("herb")
+            if herb:
+                return herb
+            else:
+                return None
         else:
             logger.error(f"Could not find herb {id}")
             return None
