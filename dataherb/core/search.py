@@ -1,4 +1,11 @@
-def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
+from typing import Sequence, Union, List, Sequence
+
+from dataherb.core.base import Herb
+
+
+def search_by_keywords_in_flora(
+    flora, keywords: Sequence[str], keys: List[str] = None, min_score: float = 50
+) -> List[dict]:
     """
     search_in_flora calculates the match score of each herb and returns the top 10.
 
@@ -14,7 +21,7 @@ def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
     :rtype: list
     """
 
-    if not isinstance(keywords, (list, tuple, set)):
+    if not isinstance(keywords, Sequence):
         keywords = [keywords]
 
     herb_scores = []
@@ -29,12 +36,12 @@ def search_by_keywords_in_flora(flora, keywords, keys=None, min_score=50):
 
     ranked_herbs = sorted(herb_scores, key=lambda i: i["score"], reverse=True)
 
-    ranked_herbs = [i for i in ranked_herbs if i.get("score") >= min_score]
+    ranked_herbs = [i for i in ranked_herbs if i.get("score", 0) >= min_score]
 
     return ranked_herbs
 
 
-def search_by_ids_in_flora(flora, ids):
+def search_by_ids_in_flora(flora: List[Herb], ids: Sequence[str]) -> List[dict]:
     """
     search_in_flora finds the herb with the corresponding ids
 
@@ -46,7 +53,7 @@ def search_by_ids_in_flora(flora, ids):
     :rtype: list
     """
 
-    if not isinstance(ids, (list, tuple, set)):
+    if not isinstance(ids, Sequence):
         ids = [ids]
 
     herbs = []

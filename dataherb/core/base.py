@@ -12,17 +12,23 @@ from dataherb.utils.configs import Config
 from dataherb.fetch.remote import get_data_from_url as _get_data_from_url
 from dataherb.parse.model_json import MetaData
 from dataherb.utils.data import flatten_dict as _flatten_dict
+from typing import Optional, List, Tuple, Set, Union
+
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
 
 
-class Herb(object):
+class Herb:
     """
     Herb is a collection of the dataset.
+
+    :param meta_dict: the dictionary that specifies the herb.
+    :param base_path: the path to the dataset.
+    :param with_resources: whether to load the resources, i.e., data files.
     """
 
-    def __init__(self, meta_dict, base_path=None, with_resources=True):
+    def __init__(self, meta_dict: dict, base_path: Optional[Path], with_resources=True):
         """
         :param meta_dict: the dictionary that specifies the herb
         :type meta_dict: dict
@@ -56,14 +62,14 @@ class Herb(object):
         self._from_meta_dict(self.herb_meta_json)
 
     @property
-    def is_local(self):
+    def is_local(self) -> bool:
         is_local = False
         if self.base_path.exists():
             is_local = True
 
         return is_local
 
-    def _from_meta_dict(self, meta_dict):
+    def _from_meta_dict(self, meta_dict: dict) -> None:
         """Build properties from meta dict"""
         self.name = meta_dict.get("name")
         self.description = meta_dict.get("description")
@@ -71,7 +77,7 @@ class Herb(object):
         self.id = meta_dict.get("id")
 
         self.source = meta_dict.get("source")
-        self.metadata_uri = meta_dict.get("metadata_uri")
+        self.metadata_uri = meta_dict.get("metadata_uri", "")
         self.uri = meta_dict.get("uri")
         self.datapackage = Package(meta_dict.get("datapackage"))
         if not self.datapackage:
@@ -83,7 +89,13 @@ class Herb(object):
                 for i in range(len(self.datapackage.resources))
             ]
 
-    def get_resource(self, idx=None, path=None, name=None, source_only=True):
+    def get_resource(
+        self,
+        idx: int = None,
+        path: str = None,
+        name: str = None,
+        source_only: bool = True,
+    ) -> Resource:
         if idx is None:
             if path:
                 all_paths = [
@@ -142,7 +154,7 @@ class Herb(object):
         else:
             return resource
 
-    def update_datapackage(self):
+    def update_datapackage(self) -> None:
         """
         update_datapackage gets the datapackage metadata from the metadata_uri
         """
@@ -152,7 +164,7 @@ class Herb(object):
 
             if not file_content.status_code == 200:
                 file_error_msg = "Could not fetch remote file: {}; {}".format(
-                    self.url, file_content.status_code
+                    self.metadata_uri, file_content.status_code
                 )
                 click.ClickException(file_error_msg)
                 # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
@@ -171,7 +183,9 @@ class Herb(object):
 
         return self.datapackage
 
-    def search_score(self, keywords, keys=None):
+    def search_score(
+        self, keywords: Union[List[str], Tuple[str], Set[str]], keys: List[str] = None
+    ) -> float:
         """
         search_score calcualtes the matching score of the herb for any given keyword
 
@@ -237,111 +251,4 @@ class Herb(object):
             f"name: {meta.get('name')}"
             f"description: {meta.get('description')}\n"
             f"contributors: {authors}"
-        )
-
-
-class Leaf(object):
-    """
-    Deprecated
-
-    Leaf is a data file of the Herb.
-    """
-
-    def __init__(self, leaf_meta_json, herb):
-        self.leaf_meta_json = leaf_meta_json
-        self.herb = herb
-
-        self.url = "https://raw.githubusercontent.com/{}/master/{}".format(
-            self.herb.repository, self.leaf_meta_json.get("path")
-        )
-        self.format = self.leaf_meta_json.get("format")
-        # decode the file content using decode
-        self.decode = self.leaf_meta_json.get("decode", "utf-8")
-        self.name = self.leaf_meta_json.get("name")
-        self.description = self.leaf_meta_json.get("description")
-        self.path = self.leaf_meta_json.get("path")
-        self.downloaded = {}
-
-    def download(self):
-        """
-        download downloads the data
-        """
-
-        # Fetch data from remote
-        file_content = _get_data_from_url(self.url)
-        if not file_content.status_code == 200:
-            file_error_msg = "Could not fetch remote file: {}; {}".format(
-                self.url, file_content.status_code
-            )
-            click.ClickException(file_error_msg)
-            # file_content = json.dumps([{"url": self.url, "error": file_error_msg}])
-        else:
-            file_content = file_content.content
-
-        if self.format.lower() == "csv":
-            if isinstance(file_content, bytes):
-                file_string_io = io.StringIO(file_content.decode(self.decode))
-            else:
-                file_string_io = file_content
-            # csv files may have comment rows
-            file_comment = self.leaf_meta_json.get("comment")
-            # csv files may have different separators
-            file_separator = self.leaf_meta_json.get("seperator", ",")
-            try:
-                data = pd.read_csv(
-                    file_string_io, comment=file_comment, sep=file_separator
-                )
-            except Exception as e:
-                logger.error(f"Error loading remote file: {self.url}")
-                data = file_string_io
-        elif self.format.lower() == "json":
-            if isinstance(file_content, bytes):
-                file_string_io = io.StringIO(file_content.decode(self.decode))
-            else:
-                file_string_io = file_content
-
-            try:
-                data = pd.read_json(self.url)
-            except Exception as e:
-                logger.error(f"Error loading remote file: {self.url}")
-                data = file_string_io
-        else:
-            logger.error(f"data file format {self.format} is not supported!")
-
-        self.downloaded = {"data": data, "content": file_content}
-
-    @property
-    def data(self):
-        if not self.downloaded:
-            self.download()
-
-        return self.downloaded.get("data")
-
-    @property
-    def content(self):
-        if not self.downloaded:
-            self.download()
-
-        return self.downloaded.get("content")
-
-    def metadata(self, format=None):
-        """
-        metadata formats the metadata of the herb
-        """
-        if format is None:
-            format = "json"
-
-        if format == "json":
-            return self.leaf_meta_json
-        else:
-            logger.error(f"format {format} is not support for metadata!")
-
-    def __str__(self):
-        return """{} from {} with size {}, the remote file is located at {};\n\n{}
-        """.format(
-            self.leaf_meta_json.get("path"),
-            self.herb.id,
-            self.leaf_meta_json.get("size"),
-            self.path,
-            self.metadata(),
         )
