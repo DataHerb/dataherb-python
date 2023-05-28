@@ -82,10 +82,15 @@ nav:
     - "Download Dataset": tutorials/download/index.md
     - "Serve Flora": tutorials/serve/index.md
     - "Remove Dataset": tutorials/remove/index.md
+    - "Command Line Tool": references/command.md
   - References:
     - "Introduction": references/index.md
-    - "dataherb.command": references/command.md
     - "dataherb.flora": "references/flora.md"
+    - "dataherb.cmd":
+      - "cmd.create": references/cmd/create.md
+      - "cmd.search": references/cmd/search.md
+      - "cmd.sync_git": references/cmd/sync_git.md
+      - "cmd.sync_s3": references/cmd/sync_s3.md
     - "dataherb.core":
       - "dataherb.core.base": references/core/base.md
       - "dataherb.core.search": references/core/search.md
