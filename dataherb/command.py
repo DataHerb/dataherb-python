@@ -11,6 +11,8 @@ from loguru import logger
 from mkdocs.commands.serve import serve as _serve
 from rich.console import Console
 
+
+from dataherb.version import __version__
 from dataherb.cmd.create import describe_dataset
 from dataherb.cmd.search import HerbTable
 from dataherb.cmd.sync_git import remote_git_repo, upload_dataset_to_git
@@ -36,9 +38,17 @@ __CWD__ = Path(__file__).parent.resolve()
 def dataherb(ctx):
     if ctx.invoked_subcommand is None:
         click.echo("Hello {}".format(os.environ.get("USER", "")))
-        click.echo("Welcome to DataHerb.")
+        click.echo(f"Welcome to DataHerb (version {__version__}).")
     else:
         click.echo("Loading Service: %s" % ctx.invoked_subcommand)
+
+
+@dataherb.command()
+def version():
+    """
+    Print out the version of the tool.
+    """
+    click.echo(f"dataherb version {__version__}")
 
 
 @dataherb.command()
