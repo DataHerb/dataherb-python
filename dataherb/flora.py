@@ -33,7 +33,6 @@ class Flora:
     """
 
     def __init__(self, flora_path: Union[Path, URL], is_aggregated: bool = False):
-
         self.is_aggregated = is_aggregated
 
         if not isinstance(flora_path, (Path, URL)):
@@ -150,7 +149,12 @@ class Flora:
         else:
             self.remove_herb_from_flora(herb_id)
 
-    def save(self, path: Path = None, id: str = None, herb: Herb = None) -> None:
+    def save(
+        self,
+        path: Optional[Path] = None,
+        id: Optional[str] = None,
+        herb: Optional[Herb] = None,
+    ) -> None:
         """save flora metadata to json file"""
 
         if path is None:
@@ -184,7 +188,7 @@ class Flora:
                 logger.debug(f"Saving herb using herb id")
                 self.save_herb_meta(id, path / f"{id}")
 
-    def save_herb_meta(self, id: str, path: Path = None) -> None:
+    def save_herb_meta(self, id: str, path: Optional[Path] = None) -> None:
         """Save a herb metadata to json file"""
         if path is None:
             path = self.workdir / f"{id}"
@@ -198,7 +202,7 @@ class Flora:
                 self.herb_meta(id), fp, sort_keys=True, indent=4, separators=(",", ": ")
             )
 
-    def remove_herb_from_flora(self, id: str, path: Path = None) -> None:
+    def remove_herb_from_flora(self, id: str, path: Optional[Path] = None) -> None:
         """Remove a herb metadata to json file"""
         if path is None:
             path = self.workdir / f"{id}"

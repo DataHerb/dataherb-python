@@ -30,7 +30,6 @@ class SaveModel:
     """
 
     def __init__(self, flora, workdir, **kargs) -> None:
-
         if isinstance(flora, str):
             flora = Flora(flora)
 

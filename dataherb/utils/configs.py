@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from loguru import logger
-from typing import cast
+from typing import cast, Optional
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
@@ -14,14 +14,10 @@ class Config:
 
     def __init__(
         self,
-        is_aggregated: bool = None,
-        config_path: Path = None,
+        is_aggregated: bool = False,
+        config_path: Optional[Path] = None,
         no_config_error: bool = False,
     ):
-
-        if is_aggregated is None:
-            is_aggregated = False
-
         self.is_aggregated = is_aggregated
 
         self.config_path = config_path
@@ -39,7 +35,7 @@ class Config:
 
         # self.config = self.get_config(no_config_error=self.no_config_error)
 
-    def _flora_path(self, flora, workdir: str = None) -> Path:
+    def _flora_path(self, flora, workdir: Optional[str] = None) -> Path:
         """Get the full path to the specified flora"""
 
         if workdir is None:

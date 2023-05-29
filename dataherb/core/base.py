@@ -28,7 +28,9 @@ class Herb:
     :param with_resources: whether to load the resources, i.e., data files.
     """
 
-    def __init__(self, meta_dict: dict, base_path: Path = None, with_resources=True):
+    def __init__(
+        self, meta_dict: dict, base_path: Optional[Path] = None, with_resources=True
+    ):
         """
         :param meta_dict: the dictionary that specifies the herb
         :type meta_dict: dict
@@ -91,9 +93,9 @@ class Herb:
 
     def get_resource(
         self,
-        idx: int = None,
-        path: str = None,
-        name: str = None,
+        idx: Optional[int] = None,
+        path: Optional[str] = None,
+        name: Optional[str] = None,
         source_only: bool = True,
     ) -> Resource:
         if idx is None:
@@ -184,7 +186,9 @@ class Herb:
         return self.datapackage
 
     def search_score(
-        self, keywords: Union[List[str], Tuple[str], Set[str]], keys: List[str] = None
+        self,
+        keywords: Union[List[str], Tuple[str], Set[str]],
+        keys: Optional[List[str]] = None,
     ) -> float:
         """
         search_score calcualtes the matching score of the herb for any given keyword

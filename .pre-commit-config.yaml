@@ -22,3 +22,4 @@ repos:
         require_serial: true
         # Print the number of files as a sanity-check
         verbose: true
+        additional_dependencies: ["types-requests", "types-PyYAML", "types-python-slugify"]

@@ -5,5 +5,4 @@ import pytest
 
 @pytest.mark.parametrize("path, expected", [pytest.param(Path("."), False)])
 def test_is_git_repo(path, expected):
-
     assert is_git_repo(path), expected

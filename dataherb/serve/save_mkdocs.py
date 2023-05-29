@@ -24,7 +24,6 @@ class SaveMkDocs(SaveModel):
     """
 
     def __init__(self, flora, workdir, folder):
-
         super().__init__(flora, workdir)
         if folder is None:
             folder = ".serve"
@@ -166,5 +165,4 @@ class SaveMkDocs(SaveModel):
 
 
 if __name__ == "__main__":
-
     pass
