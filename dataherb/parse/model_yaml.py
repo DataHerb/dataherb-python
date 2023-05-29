@@ -13,6 +13,7 @@ logger.add(sys.stderr, level="INFO", enqueue=True)
 
 IGNORED_FOLDERS_AND_FILES = [".git", ".dataherb", ".vscode"]
 
+
 # Add representer to ruamel.yaml for OrderedDict
 class MyRepresenter(RoundTripRepresenter):
     pass
@@ -55,7 +56,6 @@ class MetaData:
         )
 
     def parse_structure(self, folder=None):
-
         if folder is None:
             folder = "."
 
@@ -88,7 +88,6 @@ class MetaData:
         return fields
 
     def _generate_leaf(self, path, meta_input):
-
         name = meta_input.get("name", "")
         description = meta_input.get("description", "")
         updated_at = meta_input.get("updated_at", "")
@@ -118,7 +117,6 @@ class MetaData:
         return res
 
     def append_leaf(self, dataset_file, meta_input):
-
         existing_leaves = self.template["data"]
         existing_leaves.append(self._generate_leaf(dataset_file, meta_input))
         self.template.update(data=existing_leaves)
@@ -131,7 +129,6 @@ class MetaData:
         return existing_leaves
 
     def create(self):
-
         # create .dataherb folder
         dataherb_folder = self.dataherb_folder
         try:

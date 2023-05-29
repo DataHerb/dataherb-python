@@ -2,7 +2,6 @@ from dataherb.flora import Flora
 
 
 def test_flora_herbmeta(flora_path):
-
     id = "git-data-science-job"
     fl = Flora(flora_path=flora_path)
 
@@ -10,7 +9,6 @@ def test_flora_herbmeta(flora_path):
 
 
 def test_flora_search(flora_path):
-
     keyword = "data science"
     fl = Flora(flora_path=flora_path)
 
@@ -18,7 +16,6 @@ def test_flora_search(flora_path):
 
 
 def test_flora_herb_by_id(flora_path):
-
     fl = Flora(flora_path=flora_path)
 
     hb = fl.herb("git-data-science-job")

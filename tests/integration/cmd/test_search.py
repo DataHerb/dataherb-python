@@ -3,7 +3,6 @@ from dataherb.flora import Flora
 
 
 def test_herb_table(flora_path):
-
     id = "git-data-science-job"
     fl = Flora(flora_path=flora_path)
 

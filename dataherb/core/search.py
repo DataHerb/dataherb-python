@@ -1,4 +1,4 @@
-from typing import Sequence, Union, List, Sequence
+from typing import Sequence, Union, List, Sequence, Optional
 
 from dataherb.core.base import Herb
 
@@ -6,7 +6,7 @@ from dataherb.core.base import Herb
 def search_by_keywords_in_flora(
     flora: List[Herb],
     keywords: List[str],
-    keys: List[str] = None,
+    keys: Optional[List[str]] = None,
     min_score: float = 50,
 ) -> List[dict]:
     """
