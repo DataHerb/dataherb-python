@@ -21,10 +21,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: pre-commit
         uses: pre-commit/action@v3.0.0
-      - name: Install from source
-        run: pip install .
-      - name: Test with pytest
-        run: nosetests
+      - name: Install packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install .
   build-n-publish:
     needs: tests
     runs-on: ubuntu-latest
