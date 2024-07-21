@@ -349,40 +349,45 @@ def download(id, flora, workdir):
 
 
 @dataherb.command()
-@click.confirmation_option(
-    prompt=f"Your current working directory is {__CWD__}\n"
-    "A dataherb.json file will be created right here.\n"
-    "Are you sure this is the correct path?"
-)
+@click.argument("path")
 @click.option(
     "--flora",
     "-f",
     default=None,
-    help="Specify the path to the flora; defaults to default flora in configuration.",
+    help=(
+        "Specify the path to the flora; " "defaults to default flora in configuration."
+    ),
 )
-def create(flora):
+def create(path, flora):
     """
     creates metadata for current dataset
 
     :param flora: the path to the flora file. If not given,
         will use the default flora in the configuration.
     """
+    if not click.confirm(
+        f"Working directory: {path}\n"
+        f"A dataherb.json file will be created in {path}.\n"
+        "Are you sure this is the correct path?"
+    ):
+        click.echo("Abort!")
+
     if flora is None:
         c = Config()
         flora = c.flora_path
 
     use_existing_dpkg = False
 
-    if (__CWD__ / "dataherb.json").exists():
+    if (path / "dataherb.json").exists():
         use_existing_dpkg = click.confirm(
-            f"A dataherb.json file already exists in {__CWD__}. "
+            f"A dataherb.json file already exists in {path}. "
             f"Shall we use the existing dataherb.json?",
             default=True,
             show_default=True,
         )
 
     fl = Flora(flora_path=flora)
-    md = MetaData(folder=__CWD__)
+    md = MetaData(folder=path)
 
     if use_existing_dpkg:
         logger.debug("Using existing dataherb.json ...")
@@ -398,7 +403,7 @@ def create(flora):
 
         md.metadata.update(pkg_descriptor)
 
-        if (__CWD__ / "dataherb.json").exists():
+        if (path / "dataherb.json").exists():
             is_overwrite = click.confirm(
                 "Replace the current dataherb.json file?", default=False
             )
@@ -406,7 +411,7 @@ def create(flora):
                 md.create(overwrite=is_overwrite)
 
                 click.echo(
-                    f"The dataherb.json file in folder {__CWD__} has been replaced. \n"
+                    f"The dataherb.json file in folder {path} has been replaced. \n"
                     "Please review the dataherb.json file and update other necessary fields."
                 )
             else:
@@ -416,7 +421,7 @@ def create(flora):
             md.create()
             click.echo(
                 "The dataherb.json file has been created inside \n"
-                f"{__CWD__}\n"
+                f"{path}\n"
                 "Please review the dataherb.json file and update other necessary fields."
             )
 
