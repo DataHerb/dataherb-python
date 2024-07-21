@@ -369,7 +369,7 @@ def create(path, flora):
         path = Path(path)
 
     click.prompt(
-        f"Working directory: {path}\n"
+        f"Working directory: {path.resolve().absolute()}\n"
         f"A dataherb.json file will be created in {path}.\n"
         "Are you sure this is the correct path?",
         confirmation_prompt=True,
