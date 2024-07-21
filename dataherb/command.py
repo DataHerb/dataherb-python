@@ -349,7 +349,7 @@ def download(id, flora, workdir):
 
 
 @dataherb.command()
-@click.argument("path")
+@click.argument("path", type=click.Path(exists=True))
 @click.option(
     "--flora",
     "-f",
@@ -358,13 +358,16 @@ def download(id, flora, workdir):
         "Specify the path to the flora; " "defaults to default flora in configuration."
     ),
 )
-def create(ctx, path, flora):
+def create(path, flora):
     """
     creates metadata for current dataset
 
     :param flora: the path to the flora file. If not given,
         will use the default flora in the configuration.
     """
+    if isinstance(path, str):
+        path = Path(path)
+
     click.prompt(
         f"Working directory: {path}\n"
         f"A dataherb.json file will be created in {path}.\n"
