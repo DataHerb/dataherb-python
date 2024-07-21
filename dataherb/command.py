@@ -358,19 +358,19 @@ def download(id, flora, workdir):
         "Specify the path to the flora; " "defaults to default flora in configuration."
     ),
 )
-def create(path, flora):
+def create(ctx, path, flora):
     """
     creates metadata for current dataset
 
     :param flora: the path to the flora file. If not given,
         will use the default flora in the configuration.
     """
-    if not click.confirm(
+    click.prompt(
         f"Working directory: {path}\n"
         f"A dataherb.json file will be created in {path}.\n"
-        "Are you sure this is the correct path?"
-    ):
-        click.echo("Abort!")
+        "Are you sure this is the correct path?",
+        confirmation_prompt=True,
+    )
 
     if flora is None:
         c = Config()
