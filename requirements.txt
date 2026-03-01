@@ -8,7 +8,7 @@ colorama>=0.4.3
 GitPython>=3.1.0
 loguru>=0.5.3
 datapackage>=1.15.2
-awscli==1.33.42
+awscli==1.44.38
 docutils<0.16,>=0.10
 mkdocs-material==7.1.8
 python-slugify==5.0.2
