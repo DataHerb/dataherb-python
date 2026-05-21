@@ -28,17 +28,26 @@ class Flora:
     The provided local path or remote resource will then be converted to a list
     of dataherb objects.
 
-    :param flora: path to the flora database. Either an URL or a local path.
+    :param flora_path: path to the flora database. Either an URL, a local Path,
+        or a plain string (which is converted to a Path automatically).
     :param is_aggregated: if True, the flora is aggregated into one json file.
     """
 
-    def __init__(self, flora_path: Union[Path, URL], is_aggregated: bool = False):
+    def __init__(self, flora_path: Union[str, Path, URL], is_aggregated: bool = False):
         self.is_aggregated = is_aggregated
 
+        # Accept plain strings as local paths for convenience.
+        if isinstance(flora_path, str):
+            flora_path = Path(flora_path)
+
         if not isinstance(flora_path, (Path, URL)):
-            raise Exception(f"flora must be a path or a url. ({flora_path})")
+            raise ValueError(f"flora_path must be a Path, URL or str. Got: {type(flora_path)!r}")
 
         if isinstance(flora_path, URL):
+            # Remote flora: workdir defaults to the current directory because
+            # there is no local folder structure to infer it from.
+            self.workdir = Path.cwd()
+            self.flora_path = flora_path
             self.flora = self._get_remote_flora(flora_path)
 
         if isinstance(flora_path, Path):
@@ -90,7 +99,7 @@ class Flora:
         flora_request = get_data_from_url(flora_config)
 
         if not flora_request.status_code == 200:
-            raise Exception(
+            raise ConnectionError(
                 "Could not download dataherb flora from remote. status code: {}".format(
                     flora_request.status_code
                 )
@@ -114,7 +123,7 @@ class Flora:
 
         for h_exist in self.flora:
             if herb.id == h_exist.id:
-                raise Exception(f"herb id = {herb.id} already exists")
+                raise ValueError(f"herb id = {herb.id} already exists")
 
         self.flora.append(herb)
         if self.is_aggregated:
@@ -124,13 +133,13 @@ class Flora:
 
     def _convert_to_herb(self, herb: Union[Herb, dict, MetaData]) -> Herb:
         if isinstance(herb, MetaData):
-            herb = Herb(herb.metadata)
+            herb = Herb(herb.metadata, base_path=self.workdir / herb.metadata.get("id", ""))
         elif isinstance(herb, dict):
-            herb = Herb(herb)
+            herb = Herb(herb, base_path=self.workdir / herb.get("id", ""))
         elif isinstance(herb, Herb):
             pass
         else:
-            raise Exception(f"Input herb type ({type(herb)}) is not supported.")
+            raise TypeError(f"Input herb type ({type(herb)}) is not supported.")
 
         return herb
 
@@ -180,7 +189,7 @@ class Flora:
                 )
         else:
             if (not id) and (not herb):
-                raise Exception("dataherb id must be provided")
+                raise ValueError("dataherb id must be provided")
             elif herb:
                 logger.debug(f"Saving herb using herb object")
                 self.save_herb_meta(id=herb.id, path=path / f"{herb.id}")

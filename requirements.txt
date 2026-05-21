@@ -14,7 +14,6 @@ mkdocs-material==7.1.8
 python-slugify==5.0.2
 mkdocs-macros-plugin==0.5.12
 rich>=10.7.0
-pytest==7.1.2
 validators==0.19.0
 yarl==1.9.4
 giturlparse==0.10.0

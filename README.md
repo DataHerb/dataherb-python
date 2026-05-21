@@ -26,7 +26,22 @@ Documentation: [dataherb.github.io/dataherb-python](https://dataherb.github.io/d
 
 > Requires Python 3
 
-The DataHerb cli provides tools to create dataset metadata, validate metadata, search dataset in flora, and download dataset.
+The DataHerb CLI provides tools to create dataset metadata, validate metadata, search datasets in a flora, and download datasets.
+
+### Command status
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `version` | ✅ Stable | Print the installed version |
+| `configure` | ✅ Stable | Set up or inspect the local configuration |
+| `search` | ✅ Stable | Search datasets by keyword or id |
+| `download` | ✅ Stable | Download a dataset from a flora by id |
+| `create` | ✅ Stable | Create metadata for a local dataset folder |
+| `add` | ✅ Stable | Add a remote dataset to the flora |
+| `remove` | ✅ Stable | Remove a dataset from the flora |
+| `upload` | ⚠️ Experimental | Upload the current folder to a remote (git sync is manual) |
+| `validate` | ✅ Stable | Validate the `dataherb.json` in the current folder |
+| `serve` | ✅ Stable | Launch a local MkDocs site for the flora |
 
 ### Search and Download
 
@@ -34,32 +49,29 @@ Search by keyword
 
 ```
 dataherb search covid19
-# Shows the minimal metadata
+# Shows a rich table summary
 ```
 
 Search by dataherb id
 
 ```
-dataherb search -i covid19_eu_data
-# Shows the full metadata
+dataherb search --id covid19_eu_data
+# Shows the dataset details
 ```
 
 Download dataset by dataherb id
 
 ```
 dataherb download covid19_eu_data
-# Downloads this dataset: http://dataherb.io/flora/covid19_eu_data
+# Downloads this dataset
 ```
 
-
 ### Create Dataset Using Command Line Tool
-
-We provide a template for dataset creation.
 
 Within a dataset folder where the data files are located, use the following command line tool to create the metadata template.
 
 ```bash
-dataherb create
+dataherb create .
 ```
 
 ### Upload dataset to remote
@@ -70,8 +82,16 @@ Within the dataset folder, run
 dataherb upload
 ```
 
-### UI for all the datasets in a flora
+> **Note:** Git-based uploads (`source: git`) currently guide you to push manually.
+> Pass `--experimental` to attempt an automatic git push.
 
+### Validate dataset metadata
+
+```bash
+dataherb validate
+```
+
+### UI for all the datasets in a flora
 
 ```bash
 dataherb serve
@@ -132,8 +152,10 @@ We desigined the following workflow to share and index open datasets.
 
 ## Development
 
-1. Create a conda environment.
-2. Install requirements: `pip install -r requirements.txt`
+1. Create a virtual environment.
+2. Install runtime requirements: `pip install -r requirements.txt`
+3. Install development requirements: `pip install -r requirements-dev.txt`
+4. Run tests: `pytest tests/`
 
 ## Documentation
 
