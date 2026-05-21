@@ -1,11 +1,11 @@
-from typing import Sequence, Union, List, Sequence, Optional
+from typing import Sequence, Union, List, Optional
 
 from dataherb.core.base import Herb
 
 
 def search_by_keywords_in_flora(
     flora: List[Herb],
-    keywords: List[str],
+    keywords: Union[str, List[str]],
     keys: Optional[List[str]] = None,
     min_score: float = 50,
 ) -> List[dict]:
@@ -18,7 +18,7 @@ def search_by_keywords_in_flora(
     :param min_score: minimum score of the dataset, default to 50
     """
 
-    if not isinstance(keywords, List):
+    if isinstance(keywords, str):
         keywords = [keywords]
 
     herb_scores = []
@@ -38,20 +38,24 @@ def search_by_keywords_in_flora(
     return ranked_herbs
 
 
-def search_by_ids_in_flora(flora: List[Herb], ids: Sequence[str]) -> List[dict]:
+def search_by_ids_in_flora(flora: List[Herb], ids: Union[str, Sequence[str]]) -> List[dict]:
     """
     search_in_flora finds the herb with the corresponding ids
 
     :param flora: list of herbs
     :type flora: list
-    :param ids: ids of the herbs to be located
-    :type ids: list
+    :param ids: one or more herb ids to locate
+    :type ids: str or list of str
     :return: herbs that matches the id
     :rtype: list
     """
 
-    if not isinstance(ids, Sequence):
+    # Normalise: a plain string should be treated as a single ID, not a
+    # character-by-character sequence.
+    if isinstance(ids, str):
         ids = [ids]
+    elif not isinstance(ids, (list, tuple, set)):
+        ids = list(ids)
 
     herbs = []
     for herb in flora:
