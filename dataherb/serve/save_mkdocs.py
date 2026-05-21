@@ -1,12 +1,12 @@
 import json
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
 
 import click
 import yaml
-from distutils.dir_util import copy_tree
 from loguru import logger
 from slugify import slugify
 
@@ -108,7 +108,7 @@ class SaveMkDocs(SaveModel):
 
         mkdocs_template_path = Path(__file__).parent / "mkdocs_template"
 
-        copy_tree(str(mkdocs_template_path), str(self.mkdocs_folder))
+        shutil.copytree(str(mkdocs_template_path), str(self.mkdocs_folder), dirs_exist_ok=True)
 
     def create_mkdocs_yaml(self):
         """creates mkdocs.yaml from mkdocs_templates.py"""

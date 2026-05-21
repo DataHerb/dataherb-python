@@ -152,10 +152,15 @@ We desigined the following workflow to share and index open datasets.
 
 ## Development
 
-1. Create a virtual environment.
-2. Install runtime requirements: `pip install -r requirements.txt`
-3. Install development requirements: `pip install -r requirements-dev.txt`
-4. Run tests: `pytest tests/`
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
+2. Install the project and dev dependencies:
+   ```bash
+   uv sync --extra dev
+   ```
+3. Run tests:
+   ```bash
+   uv run pytest
+   ```
 
 ## Documentation
 
