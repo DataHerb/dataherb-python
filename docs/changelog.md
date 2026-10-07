@@ -5,6 +5,8 @@
 Added:
 
 - `dataherb catalog build | validate | lint | serve`: build a static DataHerb Explorer catalog site from `dataherb.config.yml` (git, S3, HTTP and local sources, S3 discovery, metadata quality scores).
+- `dataherb catalog add`: list git repos in the catalog (`--org ORG --match PREFIX` for a whole org). Pointer entries for repos with metadata, inline entries inferred from a clone otherwise.
+- Catalog entries can be Markdown files (`catalog/<id>.md`): fields in YAML front matter, the body is shown on the dataset page above the dataset's own documentation. `.yml`/`.json` entries still work.
 - `dataherb status emit | check`: write and check job status files (`dataherb.status/v1`).
 - DataHerb v2 metadata (owner, tags, license, classification, update frequency, status job, related datasets) with JSON Schemas in `dataherb/catalog/schemas`.
 - Optional extras: `dataherb[s3]` (boto3), `dataherb[infer]` (duckdb).

@@ -7,6 +7,7 @@ from dataherb.catalog import add as add_mod
 from dataherb.catalog.add import add_repos, default_id, list_org_repos
 from dataherb.catalog.config import load_config
 from dataherb.catalog.resolve import build_catalog
+from dataherb.catalog.util import split_front_matter
 from dataherb.command import dataherb
 
 
@@ -50,13 +51,14 @@ def test_add_pointer_inline_and_skip(project, tmp_path):
         "acme/raw": "inline",
         "acme/gone": "skipped",
     }
-    meta = yaml.safe_load((project / "catalog" / "meta.yml").read_text())
+    meta, body = split_front_matter((project / "catalog" / "meta.md").read_text())
     assert meta == {"id": "meta", "repo": "acme/meta", "tags": ["new"]}
-    raw = yaml.safe_load((project / "catalog" / "raw.yml").read_text())
+    assert body == ""
+    raw, _ = split_front_matter((project / "catalog" / "raw.md").read_text())
     assert raw["inline"] is True and raw["repo"] == "acme/raw"
     r0 = raw["datapackage"]["resources"][0]
     assert r0["path"] == "data/x.csv" and r0["rows"] == 2
-    assert not (project / "catalog" / "gone.yml").exists()
+    assert not (project / "catalog" / "gone.md").exists()
 
     ds = {d["id"]: d for d in build_catalog(load_config(project / "dataherb.config.yml")).datasets}
     assert ds["meta"]["name"] == "Meta"
@@ -94,4 +96,25 @@ def test_cli_dry_run(project):
     )
     assert res.exit_code == 0, res.output
     assert "pointer" in res.output and "would add 1 of 1" in res.output
-    assert not (project / "catalog" / "meta.yml").exists()
+    assert not (project / "catalog" / "meta.md").exists()
+
+
+def test_force_keeps_markdown_body(project):
+    meta_dir = project / "git" / "acme" / "meta" / "HEAD"
+    meta_dir.mkdir(parents=True)
+    (meta_dir / "dataherb.json").write_text("{}")
+    entry = project / "catalog" / "meta.md"
+    entry.write_text("---\nid: meta\nrepo: acme/meta\n---\n\nHand-written notes.\n")
+    cfg = load_config(project / "dataherb.config.yml")
+    [r] = add_repos(cfg, ["acme/meta"], tags=("x",), force=True)
+    assert r.kind == "pointer"
+    data, body = split_front_matter(entry.read_text())
+    assert data["tags"] == ["x"] and body.strip() == "Hand-written notes."
+
+
+def test_yml_format(project):
+    meta_dir = project / "git" / "acme" / "meta" / "HEAD"
+    meta_dir.mkdir(parents=True)
+    (meta_dir / "dataherb.json").write_text("{}")
+    add_repos(load_config(project / "dataherb.config.yml"), ["acme/meta"], fmt="yml")
+    assert yaml.safe_load((project / "catalog" / "meta.yml").read_text())["repo"] == "acme/meta"

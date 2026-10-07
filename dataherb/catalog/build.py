@@ -33,7 +33,7 @@ def validate_inputs(cfg: Config) -> list[BuildIssue]:
     entries, load_issues = load_entries(cfg)
     issues.extend(load_issues)
     for e in entries:
-        doc = {k: v for k, v in e.items() if k != "_file"}
+        doc = {k: v for k, v in e.items() if not k.startswith("_")}
         for msg in errors("catalog-entry", doc):
             issues.append(BuildIssue("error", e.get("id"), f"{e['_file']} {msg}"))
         if e.get("inline"):

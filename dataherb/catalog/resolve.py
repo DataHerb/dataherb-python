@@ -20,7 +20,15 @@ from .stores import (
     join,
     make_stores,
 )
-from .util import FetchError, iso, load_file, load_structured, log, utcnow
+from .util import (
+    FetchError,
+    iso,
+    load_file,
+    load_structured,
+    log,
+    split_front_matter,
+    utcnow,
+)
 
 METADATA_CANDIDATES = (
     "dataherb.json",
@@ -28,6 +36,10 @@ METADATA_CANDIDATES = (
     "dataherb.yaml",
     ".dataherb/metadata.yml",
 )
+
+# Catalog entry files. Markdown entries keep the fields in YAML front matter
+# and free text (shown on the dataset page) in the body.
+ENTRY_SUFFIXES = (".md", ".yml", ".yaml", ".json")
 
 # Keys in a catalog entry that say where the dataset is, rather than describe it.
 LOCATOR_KEYS = {
@@ -40,6 +52,7 @@ LOCATOR_KEYS = {
     "inline",
     "hidden",
     "_file",
+    "_body",
 }
 
 FORMAT_BY_EXT = {
@@ -109,10 +122,17 @@ def load_entries(cfg: Config) -> tuple[list[dict], list[BuildIssue]]:
             )
             continue
         for p in sorted(folder.rglob("*")):
-            if p.suffix not in (".yml", ".yaml", ".json") or p.name.startswith("_"):
+            if p.suffix not in ENTRY_SUFFIXES or p.name.startswith("_"):
                 continue
+            body = ""
             try:
-                data = load_file(p)
+                if p.suffix == ".md":
+                    data, body = split_front_matter(p.read_text(encoding="utf-8"))
+                    if data is None:  # a README or notes, not an entry
+                        continue
+                    data = data or {}
+                else:
+                    data = load_file(p)
             except Exception as e:
                 issues.append(
                     BuildIssue(
@@ -134,6 +154,8 @@ def load_entries(cfg: Config) -> tuple[list[dict], list[BuildIssue]]:
                     continue
                 item = dict(item)
                 item["_file"] = str(p.relative_to(cfg.root)).replace("\\", "/")
+                if body.strip():
+                    item["_body"] = body.strip()
                 if "id" not in item:
                     item["id"] = p.stem
                 entries.append(item)
@@ -320,7 +342,9 @@ def normalize(
         "id": str(merged.get("id")),
         "name": merged.get("name") or merged.get("title") or str(merged.get("id")),
         "description": merged.get("description") or "",
-        "documentation": merged.get("documentation") or "",
+        "documentation": "\n\n".join(
+            x for x in (entry.get("_body"), merged.get("documentation")) if x
+        ),
         "tags": sorted({str(t) for t in _as_list(merged.get("tags")) if t}),
         "domain": merged.get("domain"),
         "owner": _owner(merged.get("owner")),

@@ -143,7 +143,19 @@ def lint(config_path, min_score):
     help="GitHub API, for --org (GitHub Enterprise: https://HOST/api/v3).",
 )
 @click.option("--include-archived", is_flag=True, help="With --org: keep archived repos.")
-@click.option("--force", is_flag=True, help="Overwrite entries that already exist.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["md", "yml"]),
+    default="md",
+    show_default=True,
+    help="Markdown with YAML front matter, or plain YAML.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite entries that already exist (a Markdown body is kept).",
+)
 @click.option("--dry-run", is_flag=True, help="Show what would be written.")
 def add_to_catalog(
     config_path,
@@ -156,10 +168,11 @@ def add_to_catalog(
     tags,
     api_url,
     include_archived,
+    fmt,
     force,
     dry_run,
 ):
-    """Add git repos (owner/name) to the catalog, one file per repo in catalog/.
+    """Add git repos (owner/name) to the catalog, one Markdown file per repo in catalog/.
 
     Repos with a dataherb.json/.yml get a pointer entry. Repos without one
     are cloned and scanned, and get an inline entry with the inferred files
@@ -192,6 +205,7 @@ def add_to_catalog(
         tags=tags,
         force=force,
         dry_run=dry_run,
+        fmt=fmt,
     )
     colors = {"pointer": "green", "inline": "green", "skipped": "yellow"}
     for r in results:
