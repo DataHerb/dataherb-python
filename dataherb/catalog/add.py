@@ -1,5 +1,8 @@
 """Add git repositories to the catalog as entries in catalog/.
 
+Entries are Markdown files: the fields go in the YAML front matter and the
+body is free text shown on the dataset page.
+
 A repo that already carries metadata (dataherb.json, dataherb.yml or the
 legacy .dataherb/metadata.yml) gets a short pointer entry; the builder reads
 the metadata on every build. A repo without metadata is cloned and scanned
@@ -22,7 +25,14 @@ from .config import Config
 from .infer import scaffold
 from .resolve import METADATA_CANDIDATES, load_entries
 from .stores import GitStore, StoreError, git_key, make_stores
-from .util import FetchError, env_token, http_get, slugify
+from .util import (
+    FetchError,
+    env_token,
+    front_matter_document,
+    http_get,
+    slugify,
+    split_front_matter,
+)
 
 
 @dataclass
@@ -107,6 +117,7 @@ def add_repos(
     clone_url_template: str | None = None,
     force: bool = False,
     dry_run: bool = False,
+    fmt: str = "md",
 ) -> list[Added]:
     stores = make_stores(cfg.stores, cfg.root)
     git_stores = {n: s for n, s in stores.items() if isinstance(s, GitStore)}
@@ -154,7 +165,7 @@ def add_repos(
             continue
         did = str(existing["id"]) if existing else default_id(repo, strip_prefix)
         target = (
-            cfg.path(existing["_file"]) if existing else out_dir / f"{did}.yml"
+            cfg.path(existing["_file"]) if existing else out_dir / f"{did}.{fmt}"
         )
         if not existing and (did in known_ids or target.exists()) and not force:
             results.append(
@@ -205,14 +216,22 @@ def add_repos(
 
         if not dry_run:
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(
-                yaml.safe_dump(entry, sort_keys=False, allow_unicode=True),
-                encoding="utf-8",
-            )
+            if target.suffix == ".md":
+                text = front_matter_document(entry, _keep_body(target) if force else "")
+            else:
+                text = yaml.safe_dump(entry, sort_keys=False, allow_unicode=True)
+            target.write_text(text, encoding="utf-8")
         known_ids.add(did)
         known_repos[repo.lower()] = {"id": did, "_file": str(target)}
         results.append(Added(repo, did, target, kind, note))
     return results
+
+
+def _keep_body(path: Path) -> str:
+    """The Markdown body of an entry that is being overwritten, so --force keeps hand-written notes."""
+    if not path.exists():
+        return ""
+    return split_front_matter(path.read_text(encoding="utf-8"))[1]
 
 
 def org_token(cfg: Config, store_name: str | None) -> str | None:

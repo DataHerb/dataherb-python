@@ -28,6 +28,24 @@ def load_structured(text: str | bytes, name: str = "") -> Any:
     return yaml.safe_load(text)
 
 
+_FRONT_MATTER = re.compile(r"\A---[ \t]*\r?\n(.*?)^(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.S | re.M)
+
+
+def split_front_matter(text: str) -> tuple[Any, str]:
+    """Split Markdown into (YAML front matter, body). Front matter is None when absent."""
+    text = text.lstrip("\ufeff")
+    m = _FRONT_MATTER.match(text)
+    if not m:
+        return None, text
+    return yaml.safe_load(m.group(1)), text[m.end() :]
+
+
+def front_matter_document(data: dict, body: str = "") -> str:
+    """Markdown with data as YAML front matter."""
+    head = yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
+    return f"---\n{head}---\n" + (f"\n{body.strip()}\n" if body.strip() else "")
+
+
 def load_file(path: Path) -> Any:
     return load_structured(path.read_text(encoding="utf-8"), path.name)
 
