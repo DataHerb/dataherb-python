@@ -51,7 +51,9 @@ def test_markdown_entries(project):
         "---\nid: orders\nrepo: acme/orders\nref: main\ntags: [sales]\n---\n\n"
         "## Caveats\n\nRefunds arrive a day late.\n"
     )
-    (cat / "README.md").write_text("# About this folder\n")  # no front matter: not an entry
+    (cat / "README.md").write_text(
+        "# About this folder\n"
+    )  # no front matter: not an entry
     (cat / "notes.md").write_text("---\nid: notes-ds\ninline: true\nname: Notes\n---\n")
     res = build_catalog(load_config(project / "dataherb.config.yml"))
     ds = by_id(res)

@@ -135,14 +135,18 @@ def lint(config_path, min_score):
 )
 @click.option("--store", "store_name", help="Git store from the config.")
 @click.option("--ref", help="Branch, tag or sha to pin.")
-@click.option("--tag", "tags", multiple=True, help="Tag for the new entries. Repeatable.")
+@click.option(
+    "--tag", "tags", multiple=True, help="Tag for the new entries. Repeatable."
+)
 @click.option(
     "--api-url",
     default="https://api.github.com",
     show_default=True,
     help="GitHub API, for --org (GitHub Enterprise: https://HOST/api/v3).",
 )
-@click.option("--include-archived", is_flag=True, help="With --org: keep archived repos.")
+@click.option(
+    "--include-archived", is_flag=True, help="With --org: keep archived repos."
+)
 @click.option(
     "--format",
     "fmt",
@@ -209,12 +213,16 @@ def add_to_catalog(
     )
     colors = {"pointer": "green", "inline": "green", "skipped": "yellow"}
     for r in results:
-        where = r.path.relative_to(cfg.root) if r.path and r.path.is_relative_to(cfg.root) else (r.path or "-")
-        click.secho(
-            f"{r.kind:<8} {r.repo} -> {where}  ({r.note})", fg=colors[r.kind]
+        where = (
+            r.path.relative_to(cfg.root)
+            if r.path and r.path.is_relative_to(cfg.root)
+            else (r.path or "-")
         )
+        click.secho(f"{r.kind:<8} {r.repo} -> {where}  ({r.note})", fg=colors[r.kind])
     added = sum(r.kind != "skipped" for r in results)
-    click.echo(f"{'would add' if dry_run else 'added'} {added} of {len(results)} repo(s)")
+    click.echo(
+        f"{'would add' if dry_run else 'added'} {added} of {len(results)} repo(s)"
+    )
 
 
 @catalog.command("serve")

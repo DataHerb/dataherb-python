@@ -28,7 +28,9 @@ def load_structured(text: str | bytes, name: str = "") -> Any:
     return yaml.safe_load(text)
 
 
-_FRONT_MATTER = re.compile(r"\A---[ \t]*\r?\n(.*?)^(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.S | re.M)
+_FRONT_MATTER = re.compile(
+    r"\A---[ \t]*\r?\n(.*?)^(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.S | re.M
+)
 
 
 def split_front_matter(text: str) -> tuple[Any, str]:
