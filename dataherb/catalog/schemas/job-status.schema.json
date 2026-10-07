@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dataherb.github.io/specs/job-status/v1.json",
+  "title": "DataHerb job status file (v1)",
+  "description": "Written by a data job (Airflow task, GitHub Actions workflow, cron script, ...) after or during each run. latest.json holds the job's current state; runs/<run_id>.json holds one immutable record per run. See docs/job-status-spec.md.",
+  "type": "object",
+  "required": ["spec", "job", "run"],
+  "properties": {
+    "spec": { "const": "dataherb.status/v1" },
+    "job": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug", "description": "Stable job id. Also the folder name under the status prefix." },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "owner": { "type": "string", "description": "Team or person responsible. An email or a team handle." },
+        "orchestrator": { "type": "string", "examples": ["airflow", "github-actions", "cron", "dagster", "prefect", "manual"] },
+        "url": { "type": "string", "format": "uri", "description": "Link to the job definition (DAG page, workflow file)." },
+        "schedule": { "type": "string", "description": "Cron expression or human description. Informational." },
+        "expected_interval": { "$ref": "#/$defs/duration", "description": "How often a successful run is expected, e.g. PT1H, P1D. Drives staleness." },
+        "max_duration": { "$ref": "#/$defs/duration", "description": "A run still 'running' after this long is reported as stuck." },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "run": { "$ref": "#/$defs/run" },
+    "last_success": {
+      "description": "Only in latest.json. Copy of the most recent successful run, carried forward by the writer so staleness is known even when the latest run failed.",
+      "oneOf": [{ "$ref": "#/$defs/run" }, { "type": "null" }]
+    },
+    "datasets": {
+      "type": "array",
+      "description": "Datasets this run produced or refreshed. ids match catalog dataset ids.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "resources": { "type": "array", "items": { "type": "string" } },
+          "rows": { "type": "integer", "minimum": 0 },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "data_updated_at": { "type": "string", "format": "date-time", "description": "Timestamp of the newest record, if known." },
+          "version": { "type": "string" }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "description": "Data quality checks the run performed.",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "enum": ["pass", "warn", "fail"] },
+          "message": { "type": "string" },
+          "value": { "type": ["number", "string", "boolean", "null"] }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Free-form numeric metrics (records_crawled, pages, http_errors, ...).",
+      "additionalProperties": { "type": ["number", "null"] }
+    },
+    "producer": {
+      "type": "object",
+      "description": "The tool that wrote this file.",
+      "properties": { "name": { "type": "string" }, "version": { "type": "string" } }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "slug": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "duration": { "type": "string", "pattern": "^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+(\\.\\d+)?S)?)?$" },
+    "run": {
+      "type": "object",
+      "required": ["id", "status", "started_at"],
+      "properties": {
+        "id": { "type": "string", "description": "Unique per job. Airflow run_id, GitHub run_id-run_attempt, a timestamp..." },
+        "status": { "enum": ["queued", "running", "success", "partial", "failed", "skipped", "cancelled"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" },
+        "duration_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "trigger": { "enum": ["schedule", "manual", "event", "backfill", "unknown"] },
+        "url": { "type": "string", "format": "uri", "description": "Link to the run's logs." },
+        "message": { "type": "string" },
+        "error": {
+          "type": ["object", "null"],
+          "properties": { "type": { "type": "string" }, "message": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

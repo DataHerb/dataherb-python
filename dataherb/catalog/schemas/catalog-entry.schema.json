@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dataherb.github.io/specs/catalog-entry/v2.json",
+  "title": "DataHerb catalog entry",
+  "description": "One file in catalog/. Points at a dataset's metadata (git repo, S3 prefix, URL, or local folder) or embeds it. Any dataset-metadata field set here overrides the remote value, so the catalog can add tags, owners or status jobs without touching the data.",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "store": { "type": "string", "description": "Name of a store in dataherb.config.yml. Defaults to the store of type git when `repo` is given, else `local`." },
+    "repo": { "type": "string", "description": "git: owner/name." },
+    "ref": { "type": "string", "description": "git: branch, tag or sha. Defaults to the store's default_ref." },
+    "prefix": { "type": "string", "description": "s3/local: folder holding the dataset." },
+    "url": { "type": "string", "description": "http: base URL holding the dataset." },
+    "metadata_path": { "type": "string", "description": "Metadata file relative to the dataset base. Defaults to trying dataherb.json, dataherb.yml, .dataherb/metadata.yml." },
+    "inline": { "type": "boolean", "description": "Metadata is fully in this file; nothing is fetched." },
+    "hidden": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}
