@@ -119,6 +119,90 @@ def lint(config_path, min_score):
         sys.exit(1)
 
 
+@catalog.command("add")
+@CONFIG_OPTION
+@click.argument("repos", nargs=-1)
+@click.option("--org", help="Add every repo of this GitHub org (or user).")
+@click.option(
+    "--match",
+    default="",
+    help="With --org: only repos whose name starts with this, e.g. dataset.",
+)
+@click.option(
+    "--strip-prefix",
+    default=None,
+    help="Drop this from repo names to make ids. Defaults to --match.",
+)
+@click.option("--store", "store_name", help="Git store from the config.")
+@click.option("--ref", help="Branch, tag or sha to pin.")
+@click.option("--tag", "tags", multiple=True, help="Tag for the new entries. Repeatable.")
+@click.option(
+    "--api-url",
+    default="https://api.github.com",
+    show_default=True,
+    help="GitHub API, for --org (GitHub Enterprise: https://HOST/api/v3).",
+)
+@click.option("--include-archived", is_flag=True, help="With --org: keep archived repos.")
+@click.option("--force", is_flag=True, help="Overwrite entries that already exist.")
+@click.option("--dry-run", is_flag=True, help="Show what would be written.")
+def add_to_catalog(
+    config_path,
+    repos,
+    org,
+    match,
+    strip_prefix,
+    store_name,
+    ref,
+    tags,
+    api_url,
+    include_archived,
+    force,
+    dry_run,
+):
+    """Add git repos (owner/name) to the catalog, one file per repo in catalog/.
+
+    Repos with a dataherb.json/.yml get a pointer entry. Repos without one
+    are cloned and scanned, and get an inline entry with the inferred files
+    and columns.
+
+    \b
+    dataherb catalog add DataHerb/dataset-covid-19
+    dataherb catalog add --org DataHerb --match dataset
+    """
+    from dataherb.catalog.add import add_repos, list_org_repos, org_token
+
+    cfg = _load(config_path)
+    repos = list(repos)
+    if org:
+        repos += list_org_repos(
+            org,
+            match,
+            api_url=api_url,
+            token=org_token(cfg, store_name),
+            include_archived=include_archived,
+        )
+    if not repos:
+        raise click.UsageError("give repos as owner/name, or --org")
+    results = add_repos(
+        cfg,
+        list(dict.fromkeys(repos)),
+        store_name=store_name,
+        ref=ref,
+        strip_prefix=match if strip_prefix is None else strip_prefix,
+        tags=tags,
+        force=force,
+        dry_run=dry_run,
+    )
+    colors = {"pointer": "green", "inline": "green", "skipped": "yellow"}
+    for r in results:
+        where = r.path.relative_to(cfg.root) if r.path and r.path.is_relative_to(cfg.root) else (r.path or "-")
+        click.secho(
+            f"{r.kind:<8} {r.repo} -> {where}  ({r.note})", fg=colors[r.kind]
+        )
+    added = sum(r.kind != "skipped" for r in results)
+    click.echo(f"{'would add' if dry_run else 'added'} {added} of {len(results)} repo(s)")
+
+
 @catalog.command("serve")
 @click.argument("folder", default="dist", type=click.Path(exists=True, file_okay=False))
 @click.option("--port", "-p", default=8000, show_default=True)
