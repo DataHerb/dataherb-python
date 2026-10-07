@@ -16,7 +16,9 @@ def _git_repo(path, files):
     for name, text in files.items():
         (path / name).parent.mkdir(parents=True, exist_ok=True)
         (path / name).write_text(text)
-    run = lambda *a: subprocess.run(["git", *a], cwd=path, check=True, capture_output=True)  # noqa: E731
+    run = lambda *a: subprocess.run(
+        ["git", *a], cwd=path, check=True, capture_output=True
+    )  # noqa: E731
     run("init", "-q")
     run("add", ".")
     run("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init")
@@ -60,7 +62,10 @@ def test_add_pointer_inline_and_skip(project, tmp_path):
     assert r0["path"] == "data/x.csv" and r0["rows"] == 2
     assert not (project / "catalog" / "gone.md").exists()
 
-    ds = {d["id"]: d for d in build_catalog(load_config(project / "dataherb.config.yml")).datasets}
+    ds = {
+        d["id"]: d
+        for d in build_catalog(load_config(project / "dataherb.config.yml")).datasets
+    }
     assert ds["meta"]["name"] == "Meta"
     assert ds["raw"]["resources"][0]["url"].endswith("/git/acme/raw/HEAD/data/x.csv")
 
@@ -82,7 +87,10 @@ def test_list_org_repos(monkeypatch):
 
     monkeypatch.setattr(add_mod, "http_get", fake_get)
     assert list_org_repos("o", "dataset") == ["o/dataset-a"]
-    assert list_org_repos("o", "dataset", include_archived=True) == ["o/Dataset-b", "o/dataset-a"]
+    assert list_org_repos("o", "dataset", include_archived=True) == [
+        "o/Dataset-b",
+        "o/dataset-a",
+    ]
     assert seen[0].startswith("https://api.github.com/orgs/o/repos?")
 
 
@@ -92,7 +100,14 @@ def test_cli_dry_run(project):
     (meta_dir / "dataherb.json").write_text("{}")
     res = CliRunner().invoke(
         dataherb,
-        ["catalog", "add", "-c", str(project / "dataherb.config.yml"), "--dry-run", "acme/meta"],
+        [
+            "catalog",
+            "add",
+            "-c",
+            str(project / "dataherb.config.yml"),
+            "--dry-run",
+            "acme/meta",
+        ],
     )
     assert res.exit_code == 0, res.output
     assert "pointer" in res.output and "would add 1 of 1" in res.output
@@ -117,4 +132,7 @@ def test_yml_format(project):
     meta_dir.mkdir(parents=True)
     (meta_dir / "dataherb.json").write_text("{}")
     add_repos(load_config(project / "dataherb.config.yml"), ["acme/meta"], fmt="yml")
-    assert yaml.safe_load((project / "catalog" / "meta.yml").read_text())["repo"] == "acme/meta"
+    assert (
+        yaml.safe_load((project / "catalog" / "meta.yml").read_text())["repo"]
+        == "acme/meta"
+    )

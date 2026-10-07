@@ -164,9 +164,7 @@ def add_repos(
             )
             continue
         did = str(existing["id"]) if existing else default_id(repo, strip_prefix)
-        target = (
-            cfg.path(existing["_file"]) if existing else out_dir / f"{did}.{fmt}"
-        )
+        target = cfg.path(existing["_file"]) if existing else out_dir / f"{did}.{fmt}"
         if not existing and (did in known_ids or target.exists()) and not force:
             results.append(
                 Added(repo, did, target, "skipped", f"id '{did}' is already taken")
@@ -200,7 +198,9 @@ def add_repos(
                         )
                     )
                     continue
-                found = next((c for c in METADATA_CANDIDATES if (dest / c).exists()), None)
+                found = next(
+                    (c for c in METADATA_CANDIDATES if (dest / c).exists()), None
+                )
                 if found is None:
                     inferred = scaffold(dest, dataset_id=did)
 
@@ -208,7 +208,10 @@ def add_repos(
             entry["inline"] = True
             for k in ("name", "description", "datapackage"):
                 entry[k] = inferred[k]
-            kind, note = "inline", f"no metadata in the repo; inferred {len(inferred['datapackage']['resources'])} resource(s)"
+            kind, note = (
+                "inline",
+                f"no metadata in the repo; inferred {len(inferred['datapackage']['resources'])} resource(s)",
+            )
         else:
             kind, note = "pointer", f"reads {found}"
         if tags:
