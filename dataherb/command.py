@@ -5,14 +5,21 @@ from pathlib import Path
 
 import click
 import git
+import yaml
 import inquirer
-from datapackage import Package
 from loguru import logger
 from mkdocs.commands.serve import serve as _serve
 from rich.console import Console
 
 
 from dataherb.version import __version__
+from dataherb.catalog.config import load_config_defaults
+from dataherb.catalog.infer import scaffold
+from dataherb.catalog.lint import lint_dataset
+from dataherb.catalog.resolve import normalize
+from dataherb.catalog.util import load_structured
+from dataherb.catalog.validate import errors as schema_errors
+from dataherb.cmd.catalog import catalog, status
 from dataherb.cmd.create import describe_dataset
 from dataherb.cmd.search import HerbTable
 from dataherb.cmd.sync_git import remote_git_repo, upload_dataset_to_git
@@ -21,16 +28,12 @@ from dataherb.core.base import Herb
 from dataherb.fetch.remote import get_data_from_url
 from dataherb.flora import Flora
 from dataherb.parse.model_json import MetaData
-from dataherb.parse.utils import STATUS_CODE
 from dataherb.serve.save_mkdocs import SaveMkDocs
 from dataherb.utils.configs import Config
 
 logger.remove()
 logger.add(sys.stderr, level="INFO", enqueue=True)
 console = Console()
-
-
-__CWD__ = Path(__file__).parent.resolve()
 
 
 @click.group(invoke_without_command=True)
@@ -40,7 +43,7 @@ def dataherb(ctx):
         click.echo("Hello {}".format(os.environ.get("USER", "")))
         click.echo(f"Welcome to DataHerb (version {__version__}).")
     else:
-        click.echo("Loading Service: %s" % ctx.invoked_subcommand)
+        click.echo("Loading Service: %s" % ctx.invoked_subcommand, err=True)
 
 
 @dataherb.command()
@@ -349,7 +352,7 @@ def download(id, flora, workdir):
 
 
 @dataherb.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.argument("path", type=click.Path(exists=True, file_okay=False), default=".")
 @click.option(
     "--flora",
     "-f",
@@ -358,80 +361,76 @@ def download(id, flora, workdir):
         "Specify the path to the flora; " "defaults to default flora in configuration."
     ),
 )
-def create(path, flora):
+@click.option(
+    "--id", "dataset_id", default=None, help="Dataset id; defaults to the folder name."
+)
+@click.option("--name", default=None, help="Dataset name.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["json", "yaml"]),
+    default="json",
+    show_default=True,
+    help="Write dataherb.json or dataherb.yml.",
+)
+@click.option(
+    "--no-input",
+    is_flag=True,
+    help="Do not ask questions; infer what can be inferred and leave the rest blank.",
+)
+@click.option(
+    "--add-to-flora/--no-add-to-flora",
+    default=None,
+    help="Add the dataset to the local flora. Defaults to yes when dataherb is configured.",
+)
+def create(path, flora, dataset_id, name, fmt, no_input, add_to_flora):
     """
-    creates metadata for current dataset
+    creates metadata for the dataset in PATH (default: current folder)
 
-    :param flora: the path to the flora file. If not given,
-        will use the default flora in the configuration.
+    Data files (csv, tsv, parquet, json, ndjson) are scanned for columns,
+    types and row counts; install duckdb for exact types of every format.
+    The result follows the DataHerb v2 metadata spec.
     """
-    if isinstance(path, str):
-        path = Path(path)
+    path = Path(path)
+    target = path / ("dataherb.json" if fmt == "json" else "dataherb.yml")
+    existing = [
+        p for p in (path / "dataherb.json", path / "dataherb.yml") if p.exists()
+    ]
 
-    click.prompt(
-        f"Working directory: {path.resolve().absolute()}\n"
-        f"A dataherb.json file will be created in {path}.\n"
-        "Are you sure this is the correct path?",
-        confirmation_prompt=True,
+    md = scaffold(path, dataset_id=dataset_id, name=name)
+    if existing and not no_input:
+        if not click.confirm(
+            f"{existing[0]} already exists. Replace it?", default=False
+        ):
+            click.echo("We did nothing.")
+            sys.exit()
+    elif existing and no_input:
+        click.secho(f"{existing[0]} already exists; not overwriting.", fg="red")
+        sys.exit(1)
+
+    if not no_input:
+        click.echo(f"Describing the dataset in {path.resolve()}")
+        md.update(describe_dataset(md))
+
+    if fmt == "json":
+        target.write_text(json.dumps(md, indent=4, ensure_ascii=False) + "\n")
+    else:
+        target.write_text(yaml.safe_dump(md, sort_keys=False, allow_unicode=True))
+    n = len(md["datapackage"]["resources"])
+    click.echo(
+        f"Wrote {target} with {n} resource(s).\n"
+        "Review it and fill in what is missing; `dataherb validate` shows the gaps."
     )
 
-    if flora is None:
-        c = Config()
-        flora = c.flora_path
-
-    use_existing_dpkg = False
-
-    if (path / "dataherb.json").exists():
-        use_existing_dpkg = click.confirm(
-            f"A dataherb.json file already exists in {path}. "
-            f"Shall we use the existing dataherb.json?",
-            default=True,
-            show_default=True,
-        )
-
-    fl = Flora(flora_path=flora)
-    md = MetaData(folder=path)
-
-    if use_existing_dpkg:
-        logger.debug("Using existing dataherb.json ...")
-        md.load()
-    else:
-        dataset_basics = describe_dataset()
-        print(dataset_basics)
-        md.metadata.update(dataset_basics)
-
-        pkg = Package()
-        pkg.infer("**/*.csv")
-        pkg_descriptor = {"datapackage": pkg.descriptor}
-
-        md.metadata.update(pkg_descriptor)
-
-        if (path / "dataherb.json").exists():
-            is_overwrite = click.confirm(
-                "Replace the current dataherb.json file?", default=False
-            )
-            if is_overwrite:
-                md.create(overwrite=is_overwrite)
-
-                click.echo(
-                    f"The dataherb.json file in folder {path} has been replaced. \n"
-                    "Please review the dataherb.json file and update other necessary fields."
-                )
-            else:
-                click.echo("We did nothing.")
-                sys.exit()
-        else:
-            md.create()
-            click.echo(
-                "The dataherb.json file has been created inside \n"
-                f"{path}\n"
-                "Please review the dataherb.json file and update other necessary fields."
-            )
-
-    hb = Herb(md.metadata, with_resources=False)
-    fl.add(hb)
-
-    click.echo(f"Added {hb.id} into the flora.")
+    if add_to_flora is None:
+        add_to_flora = (Path.home() / ".dataherb" / "config.json").exists()
+    if add_to_flora:
+        if flora is None:
+            flora = Config().flora_path
+        fl = Flora(flora_path=flora)
+        hb = Herb(md, with_resources=False)
+        fl.add(hb)
+        click.echo(f"Added {hb.id} into the flora.")
 
 
 @dataherb.command()
@@ -467,7 +466,7 @@ def remove(flora, herb_id):
 
 @dataherb.command()
 @click.confirmation_option(
-    prompt=f"Your current working directory is {__CWD__}\n"
+    prompt=f"Your current working directory is {Path.cwd()}\n"
     "All contents in this folder will be uploaded.\n"
     "Are you sure this is the correct path?"
 )
@@ -477,14 +476,15 @@ def upload(experimental):
     upload dataset in the current folder to the remote destination
     """
 
-    md = MetaData(folder=__CWD__)
+    cwd = Path.cwd()
+    md = MetaData(folder=cwd)
     md.load()
 
     md_uri = md.metadata["uri"]
 
     is_upload = click.confirm(
         f"The dataset in the current folder\n"
-        f"{__CWD__}\n"
+        f"{cwd}\n"
         f"will be uploaded to {md_uri}",
         default=True,
         show_default=True,
@@ -495,65 +495,56 @@ def upload(experimental):
     else:
         click.echo(f"Uploading dataset to {md_uri} ...")
         if md.metadata.get("source") == "s3":
-            upload_dataset_to_s3(__CWD__, md_uri)
+            upload_dataset_to_s3(str(cwd), md_uri)
         elif md.metadata.get("source") == "git":
-            upload_dataset_to_git(__CWD__, md_uri, experimental=experimental)
+            upload_dataset_to_git(cwd, md_uri, experimental=experimental)
 
 
 @dataherb.command()
-@click.option("-v", "--verbose", type=str, default="warning")
-def validate(verbose):
+@click.argument("path", type=click.Path(exists=True, file_okay=False), default=".")
+@click.option(
+    "--min-score", type=int, default=None, help="Fail when the quality score is lower."
+)
+def validate(path, min_score):
     """
-    WIP: validates the existing metadata for current dataset
+    validates the metadata (dataherb.json or dataherb.yml) of the dataset in PATH
+
+    Checks the metadata against the DataHerb v2 schema, checks that every
+    listed data file exists, and prints a metadata quality score.
     """
-
-    click.secho(
-        f"Your current working directory is {__CWD__}\n"
-        "I will look for the .dataherb folder right here.\n",
-        bold=True,
+    path = Path(path)
+    meta_file = next(
+        (
+            path / n
+            for n in ("dataherb.json", "dataherb.yml", "dataherb.yaml")
+            if (path / n).exists()
+        ),
+        None,
     )
+    if meta_file is None:
+        click.secho(f"No dataherb.json or dataherb.yml in {path.resolve()}", fg="red")
+        sys.exit(1)
 
-    ALL_VERBOSE = ["warning", "error", "all"]
-    if verbose not in ALL_VERBOSE:
-        logger.error(f"-v or --verbose can only take one of {ALL_VERBOSE}")
+    meta = load_structured(meta_file.read_text(), meta_file.name)
+    problems = schema_errors("dataset", meta)
+    for r in (meta.get("datapackage") or {}).get("resources") or []:
+        p = r.get("path")
+        if isinstance(p, str) and "://" not in p and not (path / p).exists():
+            problems.append(f"resource {r.get('name') or p}: file {p} not found")
 
-    md = MetaData()
+    for msg in problems:
+        click.secho(f"error: {msg}", fg="red")
 
-    validate = md.validate()
+    record = normalize(meta, {}, None, {}, load_config_defaults(path))
+    quality = lint_dataset(record)
+    click.secho(f"Metadata quality: {quality['score']}/100", bold=True)
+    for f in quality["findings"]:
+        if f["check"] != "reachable":
+            click.echo(f"  - {f['message']}")
 
-    def echo_summary(key, value_dict, bg=None, fg=None):
-        if bg is None:
-            bg = "black"
-        if fg is None:
-            fg = "white"
-        return click.secho(
-            f'  {key}: {value_dict.get("value")}\n'
-            f'    STATUS: {value_dict.get("status")};\n'
-            f'    MESSAGE: {value_dict.get("message")}',
-            bg=bg,
-            fg=fg,
-        )
-
-    click.secho("Summary: validating metadata:\n- data:", bold=True)
-    for val in validate.get("data"):
-        for val_key, val_val in val.items():
-            if (val_val.get("status") == STATUS_CODE["SUCCESS"]) and (verbose == "all"):
-                echo_summary(val_key, val_val, bg="green")
-            elif (val_val.get("status") == STATUS_CODE["WARNING"]) and (
-                verbose == "warning"
-            ):
-                echo_summary(val_key, val_val, bg="magenta")
-            elif (val_val.get("status") == STATUS_CODE["ERROR"]) and (
-                verbose in ["warning", "error"]
-            ):
-                echo_summary(val_key, val_val, bg="red")
-
-    click.secho(
-        "The .dataherb folder and metadata.yml file \n"
-        f"{__CWD__}\n"
-        " has been validated. Please read the summary and fix the errors.",
-        bold=True,
-    )
+    if problems or (min_score is not None and quality["score"] < min_score):
+        sys.exit(1)
+    click.secho(f"{meta_file} is valid.", fg="green")
 
 
 @dataherb.command()
@@ -601,3 +592,7 @@ def add(flora, source, uri):
             metadata = metadata_request.json()
 
         # TODO: save content to file
+
+
+dataherb.add_command(catalog)
+dataherb.add_command(status)

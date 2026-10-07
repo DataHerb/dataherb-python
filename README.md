@@ -56,10 +56,12 @@ dataherb download covid19_eu_data
 
 We provide a template for dataset creation.
 
-Within a dataset folder where the data files are located, use the following command line tool to create the metadata template.
+Within a dataset folder where the data files are located, use the following command line tool to create the metadata. Columns, types and row counts are inferred from csv, tsv, parquet and json files.
 
 ```bash
-dataherb create
+dataherb create            # interactive
+dataherb create --no-input # infer only
+dataherb validate          # check it
 ```
 
 ### Upload dataset to remote
@@ -68,6 +70,23 @@ Within the dataset folder, run
 
 ```bash
 dataherb upload
+```
+
+### Catalog website and job status
+
+Build a static catalog and explorer website ([DataHerb Explorer](https://github.com/DataHerb/dataherb-explorer)) from a `dataherb.config.yml`:
+
+```bash
+dataherb catalog validate   # check config and catalog entries
+dataherb catalog lint       # metadata quality per dataset
+dataherb catalog build      # write the site to dist/
+```
+
+Report job runs so the catalog can show freshness and failures:
+
+```bash
+dataherb status emit --target s3://bucket/_dataherb/status/ --job-id my-crawler --status success --expected-interval P1D
+dataherb status check       # exit 1 if any job is failing, stuck or stale
 ```
 
 ### UI for all the datasets in a flora

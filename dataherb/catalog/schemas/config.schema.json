@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dataherb.github.io/specs/explorer-config/v1.json",
+  "title": "dataherb.config.yml",
+  "type": "object",
+  "required": ["site", "stores"],
+  "properties": {
+    "site": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "logo": { "type": ["string", "null"] },
+        "accent": { "type": "string" },
+        "repository": { "type": ["string", "null"] },
+        "links": {
+          "type": "array",
+          "items": { "type": "object", "required": ["label", "url"], "properties": { "label": { "type": "string" }, "url": { "type": "string" } } }
+        }
+      }
+    },
+    "stores": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "enum": ["git", "s3", "http", "local"] },
+          "raw_url_template": { "type": "string" },
+          "web_url_template": { "type": "string" },
+          "default_ref": { "type": "string" },
+          "token_env": { "type": "string" },
+          "path": { "type": "string" },
+          "bucket": { "type": "string" },
+          "region": { "type": "string" },
+          "endpoint_url": { "type": "string" },
+          "public_base_url": { "type": "string" },
+          "base_url": { "type": "string" },
+          "presign": { "type": "boolean" },
+          "presign_expiry_hours": { "type": "number", "maximum": 168 },
+          "anonymous": { "type": "boolean" }
+        }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "properties": {
+        "dirs": { "type": "array", "items": { "type": "string" } },
+        "discover": {
+          "type": "array",
+          "items": { "type": "object", "required": ["store"], "properties": { "store": { "type": "string" }, "prefix": { "type": "string" } } }
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["store"],
+            "properties": { "store": { "type": "string" }, "prefix": { "type": "string" }, "jobs": { "type": "array", "items": { "type": "string" } } }
+          }
+        },
+        "live": { "type": "boolean" },
+        "stale_grace": { "type": "number", "minimum": 0 },
+        "history": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "explorer": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "duckdb": {
+          "type": "object",
+          "properties": { "mode": { "enum": ["cdn", "vendored"] }, "version": { "type": "string" }, "cdn_base": { "type": "string" } }
+        },
+        "preview_rows": { "type": "integer", "minimum": 1 },
+        "max_browser_bytes": { "type": "integer" }
+      }
+    },
+    "snippets": {
+      "type": "array",
+      "items": { "type": "object", "required": ["label", "template"], "properties": { "label": { "type": "string" }, "language": { "type": "string" }, "template": { "type": "string" } } }
+    }
+  }
+}

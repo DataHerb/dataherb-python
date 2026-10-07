@@ -82,6 +82,8 @@ nav:
     - "Download Dataset": tutorials/download/index.md
     - "Serve Flora": tutorials/serve/index.md
     - "Remove Dataset": tutorials/remove/index.md
+    - "Catalog Website": tutorials/catalog/index.md
+    - "Job Status": tutorials/status/index.md
     - "Command Line Tool": references/command.md
   - References:
     - "Introduction": references/index.md

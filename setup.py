@@ -34,6 +34,8 @@ def setup():
         license="MIT",
         packages=_find_packages(exclude=("tests",)),
         install_requires=_requirements(),
+        extras_require={"s3": ["boto3>=1.28"], "infer": ["duckdb>=1.0"]},
+        package_data={"dataherb.catalog": ["schemas/*.json"]},
         include_package_data=True,
         entry_points={"console_scripts": ["dataherb=dataherb.command:dataherb"]},
         test_suite="nose.collector",
